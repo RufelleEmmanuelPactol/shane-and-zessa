@@ -1,0 +1,19 @@
+# dependencies and environments
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# build output
+frontend/dist/
+backend/staticfiles/
+
+# local data and secrets (the database holds guests' RSVPs)
+*.sqlite3
+.env
+.env.*
+
+# scratch
+_draft/
+.DS_Store
