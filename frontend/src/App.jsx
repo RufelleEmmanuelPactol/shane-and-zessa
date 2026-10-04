@@ -3,6 +3,9 @@ import Intro from './Intro.jsx'
 import Gate, { useGate } from './Gate.jsx'
 import { Cake, Calla, Candles, DoodleDefs, Flourish, Frame, Glasses, Heart, Notes, Rings, Rose } from './Doodles.jsx'
 
+// RSVPs need the Django backend. Static builds show a "replies open soon" note instead.
+const RSVP_OPEN = import.meta.env.DEV || import.meta.env.VITE_RSVP === 'on'
+
 const img = (name) => `${import.meta.env.BASE_URL}images/${name}`
 
 // EDIT: the wedding details live here.
@@ -316,7 +319,9 @@ export default function App() {
           <Frame className="rsvp-card reveal">
             <h2 className="script-title">Will you join us?</h2>
             <p className="muted">Kindly reply by {WEDDING.replyBy}.</p>
-            <RsvpForm />
+            {RSVP_OPEN ? <RsvpForm /> : (
+              <p className="rsvp-soon">Replies open soon. We&rsquo;ll send word when they do.</p>
+            )}
           </Frame>
         </section>
       </main>

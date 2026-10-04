@@ -550,6 +550,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-bottom-color: 
 form .btn { margin-top: 6px; }
 
 .thanks { outline: none; }
+.rsvp-soon { font-style: italic; font-size: 21px; color: var(--burgundy); }
 .thanks-title { font-family: var(--script); font-size: 52px; color: var(--burgundy); line-height: 1.2; }
 
 /* ---------- finale ---------- */
