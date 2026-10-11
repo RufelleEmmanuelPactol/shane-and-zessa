@@ -8,6 +8,8 @@ The root `Dockerfile` builds the page and serves it as a static site with Caddy 
 
 To deploy with RSVPs later, point Railway at `Dockerfile.django` (set the `RAILWAY_DOCKERFILE_PATH` variable), add `DJANGO_SECRET_KEY`, and attach a volume so replies survive redeploys.
 
+Photos, paintings and music live in a private S3 bucket under `shaneandzessa/` and are only served by the Django build: `/media/<key>` redirects to a signed link for `shaneandzessa/<key>` (e.g. `/media/audio/air-on-the-g-string.mp3`). Set `AWS_S3_ENDPOINT_URL`, `AWS_STORAGE_BUCKET_NAME`, `AWS_S3_REGION_NAME`, `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` on Railway (and `ASSET_PREFIX` to use a different folder). Without them `/media/` returns 404.
+
 ## Work on the page
 
 ```bash

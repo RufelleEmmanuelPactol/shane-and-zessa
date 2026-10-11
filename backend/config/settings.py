@@ -135,6 +135,14 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [FRONTEND_DIST] if FRONTEND_DIST.exists() else []
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+# Photos, paintings and music, served from a private S3 bucket via /media/ (see bucket/views.py).
+ASSET_S3_ENDPOINT_URL = os.environ.get('AWS_S3_ENDPOINT_URL', '')
+ASSET_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME', '')
+ASSET_S3_BUCKET = os.environ.get('AWS_STORAGE_BUCKET_NAME', '')
+ASSET_S3_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
+ASSET_S3_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
+ASSET_PREFIX = os.environ.get('ASSET_PREFIX', 'shaneandzessa/')
+
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
