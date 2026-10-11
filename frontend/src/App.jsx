@@ -33,39 +33,126 @@ function useReveal(ready) {
   }, [ready])
 }
 
-function Cover() {
+// The burgundy envelope the cover folds into: laid paper, a Morris "Honeysuckle"
+// (1876) liner on the inside of the flap, gold rules and fold shading. Drawn in
+// one 100-wide unit box per piece and stretched to the screen.
+const FLAP = 'M0 0H100C100 7 72 34 57 69Q50 82 43 69C28 34 0 7 0 0Z'
+
+function EnvelopeFront() {
+  return (
+    <>
+      <svg className="env-defs" aria-hidden="true">
+        <defs>
+          <pattern id="env-paper" patternUnits="userSpaceOnUse" width="100" height="100">
+            <image href={asset('web/paper-burgundy.webp')} width="100" height="100" preserveAspectRatio="none" />
+          </pattern>
+          <pattern id="env-liner" patternUnits="userSpaceOnUse" width="56" height="37">
+            <image href={asset('web/liner-honeysuckle.webp')} width="56" height="37" preserveAspectRatio="none" />
+          </pattern>
+          <linearGradient id="env-shade-back" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#000" stopOpacity="0.35" />
+            <stop offset="0.5" stopColor="#000" stopOpacity="0.15" />
+            <stop offset="1" stopColor="#000" stopOpacity="0.3" />
+          </linearGradient>
+          <linearGradient id="env-shade-side" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stopColor="#fff" stopOpacity="0.07" />
+            <stop offset="0.5" stopColor="#000" stopOpacity="0.12" />
+            <stop offset="1" stopColor="#000" stopOpacity="0.28" />
+          </linearGradient>
+          <linearGradient id="env-shade-bottom" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#fff" stopOpacity="0.1" />
+            <stop offset="1" stopColor="#000" stopOpacity="0.2" />
+          </linearGradient>
+          <linearGradient id="env-shade-flap" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#000" stopOpacity="0.25" />
+            <stop offset="0.6" stopColor="#fff" stopOpacity="0.04" />
+            <stop offset="1" stopColor="#fff" stopOpacity="0.1" />
+          </linearGradient>
+        </defs>
+      </svg>
+
+      <svg className="env-pocket" viewBox="0 0 100 131" preserveAspectRatio="none" aria-hidden="true">
+        {/* side flaps meet in the middle; the bottom flap folds up over them */}
+        <path d="M0 0L50 73L100 0V131H0Z" fill="url(#env-paper)" />
+        <path d="M0 0L50 73L0 131Z" fill="url(#env-shade-side)" />
+        <path d="M100 0L50 73L100 131Z" fill="url(#env-shade-side)" transform="matrix(-1 0 0 1 100 0)" />
+        <path d="M0 131L44 86Q50 80 56 86L100 131Z" fill="url(#env-paper)" />
+        <path d="M0 131L44 86Q50 80 56 86L100 131Z" fill="url(#env-shade-bottom)" />
+        <path d="M0 131L44 86Q50 80 56 86L100 131" fill="none" stroke="#2a0810" strokeOpacity="0.45" strokeWidth="0.6" vectorEffect="non-scaling-stroke" />
+        <path d="M1.5 0L50 71L98.5 0" fill="none" stroke="#c9a35a" strokeOpacity="0.85" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+      </svg>
+
+      <div className="env-flap" aria-hidden="true">
+        <div className="env-face env-flap-out"><svg viewBox="0 0 100 83" preserveAspectRatio="none">
+          <path d={FLAP} fill="url(#env-paper)" />
+          <path d={FLAP} fill="url(#env-shade-flap)" />
+          <path d={FLAP} fill="none" stroke="#c9a35a" strokeWidth="1.2" vectorEffect="non-scaling-stroke" transform="translate(50 2) scale(0.9) translate(-50 0)" />
+          <path d={FLAP} fill="none" stroke="#c9a35a" strokeOpacity="0.6" strokeWidth="0.6" vectorEffect="non-scaling-stroke" transform="translate(50 3.5) scale(0.86) translate(-50 0)" />
+        </svg></div>
+        <div className="env-face env-flap-in"><svg viewBox="0 0 100 83" preserveAspectRatio="none">
+          <path d={FLAP} fill="url(#env-paper)" />
+          <path d={FLAP} fill="url(#env-liner)" transform="translate(50 3) scale(0.92) translate(-50 0)" />
+          <path d={FLAP} fill="none" stroke="#c9a35a" strokeWidth="1" vectorEffect="non-scaling-stroke" transform="translate(50 3) scale(0.92) translate(-50 0)" />
+        </svg></div>
+      </div>
+    </>
+  )
+}
+
+// How long the cover takes to fold into its envelope and fly off; matches the
+// .cover.is-leaving timeline in index.css.
+const COVER_EXIT_MS = 3450
+
+function Cover({ onOpen }) {
   // play the entrance once the photo is ready, so it never animates over a blank
   const photo = useRef(null)
   const [ready, setReady] = useState(false)
+  const [leaving, setLeaving] = useState(false)
   useEffect(() => {
     if (photo.current?.complete) setReady(true)
   }, [])
 
+  function open() {
+    if (leaving) return
+    setLeaving(true)
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    setTimeout(onOpen, reduced ? 0 : COVER_EXIT_MS)
+  }
+
   return (
-    <header className={ready ? 'cover is-in' : 'cover'}>
-      {/* The photo, the script and the cut-out couple share one stage, so the
-          words sit behind the couple at the same spot on every screen size. */}
-      <div className="cover-stage">
-        <img ref={photo} onLoad={() => setReady(true)} onError={() => setReady(true)} className="cover-photo" src={asset('photos/cover-guitar.jpg')} width="1200" height="800" fetchPriority="high"
-          alt="Shane playing guitar while Zessa, in a burgundy dress, leans on a branch and smiles at him" />
-        <h1 className="cover-script">
-          <span>Our</span>
-          <span>wedding</span>
-          <span>day</span>
-        </h1>
-        <img className="cover-photo cover-cutout" src={asset('web/cover-cutout.webp')} width="1200" height="800" alt="" />
-      </div>
+    <header className={`cover${ready ? ' is-in' : ''}${leaving ? ' is-leaving' : ''}`}>
+      {/* On "Open the invitation" the card shrinks, a burgundy envelope closes
+          around it, the crest seals it, and the whole letter flies off. */}
+      <div className="cover-letter">
+        <svg className="env-back" viewBox="0 0 100 131" preserveAspectRatio="none" aria-hidden="true">
+          <rect width="100" height="131" fill="url(#env-paper)" />
+          <rect width="100" height="131" fill="url(#env-shade-back)" />
+        </svg>
 
-      <p className="cover-names" aria-label="Shane and Zessa"><span>SHANE</span><span>ZESSA</span></p>
+        <div className="cover-card">
+          {/* The photo, the script and the cut-out couple share one stage, so the
+              words sit behind the couple at the same spot on every screen size. */}
+          <div className="cover-stage">
+            <img ref={photo} onLoad={() => setReady(true)} onError={() => setReady(true)} className="cover-photo" src={asset('web/cover-guitar.webp')} width="3000" height="2000" fetchPriority="high"
+              alt="Shane playing guitar while Zessa, in a burgundy dress, leans on a branch and smiles at him" />
+            <h1 className="cover-script">
+              <span>Our</span>
+              <span>wedding</span>
+              <span>day</span>
+            </h1>
+            <img className="cover-photo cover-cutout" src={asset('web/cover-cutout.webp')} width="3000" height="2000" alt="" />
+          </div>
 
-      <div className="cover-date">
-        <p className="cover-date-line"><span /><time dateTime={WEDDING.start}>{WEDDING.dateShort}</time><span /></p>
-        <p>{WEDDING.dateLine}</p>
-      </div>
+          <p className="cover-names" aria-label="Shane and Zessa"><span>SHANE</span><span>ZESSA</span></p>
 
-      <div className="cover-bar">
-        <img src={asset('photos/crest.webp')} width="320" height="320" alt="" />
-        <a className="cover-open" href="#invitation">Open the invitation <ArrowRight /></a>
+          <div className="cover-bar">
+            <img src={asset('photos/crest.webp')} width="320" height="320" alt="" />
+            <button type="button" className="cover-open" onClick={open}>Open the invitation <ArrowRight /></button>
+          </div>
+        </div>
+
+        <EnvelopeFront />
+        <img className="env-seal" src={asset('photos/crest.webp')} width="320" height="320" alt="" />
       </div>
     </header>
   )
@@ -172,19 +259,33 @@ const WORDS = [
 
 export default function App() {
   const gate = useGate()
+  const [opened, setOpened] = useState(false)
   useReveal(!gate)
+
+  // The cover fills the screen and the page stays put until "Open the invitation".
+  useEffect(() => {
+    if (opened) return
+    const root = document.documentElement
+    root.classList.add('is-sealed')
+    return () => root.classList.remove('is-sealed')
+  }, [opened])
+
+  function openInvitation() {
+    window.scrollTo(0, 0)
+    setOpened(true)
+  }
 
   if (gate) return <Gate kind={gate} />
 
   return (
     <>
       {MUSIC_URL && <Music src={MUSIC_URL} />}
-      <Cover />
+      {!opened && <Cover onOpen={openInvitation} />}
 
       <main>
         <section className="invite" id="invitation">
           <div className="invite-photo">
-            <img src={asset('photos/picnic.jpg')} width="1400" height="933" loading="lazy"
+            <img src={asset('web/picnic.webp')} width="2400" height="1600" loading="lazy"
               alt="Shane and Zessa lying head to head on a picnic quilt, laughing" />
           </div>
           <div className="invite-panel">
@@ -218,7 +319,7 @@ export default function App() {
                   <span className="tl-time">{time}</span>
                   <span>
                     <span className="tl-title">{title}</span>
-                    <span className="tl-where">{where}</span>
+                    {where && <span className="tl-where">{where}</span>}
                   </span>
                 </li>
               ))}
@@ -256,7 +357,7 @@ export default function App() {
         </section>
 
         <section className="words" aria-label="Just us, golden hour, long dinners, happy tears, your favorite song, candlelight, forever starts here">
-          <img src={asset('photos/field-holding-hands.jpg')} width="900" height="1200" loading="lazy"
+          <img src={asset('web/field-holding-hands.webp')} width="1800" height="2400" loading="lazy"
             alt="Zessa and Shane holding hands in a field, both in white shirts and jeans" />
           {WORDS.map(([html, pos]) => (
             <span key={html} style={pos} aria-hidden="true" dangerouslySetInnerHTML={{ __html: html }} />

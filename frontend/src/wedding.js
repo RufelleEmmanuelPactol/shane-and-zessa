@@ -4,17 +4,19 @@ export const asset = (key) => `/media/${key}`
 
 // EDIT: the wedding details live here.
 export const WEDDING = {
-  start: '2026-11-29T15:00:00+08:00',
-  end: '2026-11-29T23:00:00+08:00',
+  // from seating to the send-off; the calendar invite and countdown use these
+  start: '2026-11-29T13:30:00+08:00',
+  end: '2026-11-29T21:00:00+08:00',
   dateShort: '29 · 11 · 26',
-  dateLine: 'Sunday, at three in the afternoon',
+  dateLine: 'Sunday, at two in the afternoon',
   place: 'Sindangan, Zamboanga del Norte',
   replyBy: 'Sunday, November 1, 2026',
   day: [
-    { time: '3:00 pm', title: 'Ceremony', where: 'Venue name, Street, City' },
-    { time: '4:30 pm', title: 'Cocktails', where: 'In the garden' },
-    { time: '6:00 pm', title: 'Dinner', where: 'Venue name, Street, City' },
-    { time: '8:00 pm', title: 'Dancing', where: 'Until the candles burn down' },
+    { time: '1:30 pm', title: 'Seating begins' },
+    { time: '2:00 pm', title: 'Ceremony' },
+    { time: '4:00 pm', title: 'Drinks, reception & pikapika' },
+    { time: '5:30 pm', title: 'Dinner' },
+    { time: '8:30 pm', title: 'Send-off' },
   ],
   attire: 'Garden formal',
   palette: [
@@ -31,7 +33,7 @@ export const WEDDING = {
 export const CONTACT_URL = 'https://www.instagram.com/regormortiz/'
 
 // Background music. Leave empty to hide the music button.
-export const MUSIC_URL = asset('audio/air-on-the-g-string.mp3')
+export const MUSIC_URL = asset('audio/air-on-the-g-string-v3.mp3')
 
 // EDIT: the guest list. The name search runs on this list in the browser
 // (replies themselves are saved by the backend). `seats` includes the guest themselves; sponsors are

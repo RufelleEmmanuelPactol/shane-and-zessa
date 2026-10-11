@@ -140,15 +140,24 @@ html { -webkit-tap-highlight-color: transparent; }
 
 /* cover: the photo, script and cut-out live on one 3:2 stage sized to the
    screen height; numbers below come from the 390×844 design */
+/* the cover is a full-screen layer over the page until it rolls away */
+html.is-sealed, html.is-sealed body { overflow: hidden; overscroll-behavior: none; }
 .cover {
-  position: relative;
-  height: 100vh;
-  height: 100svh;
-  min-height: 560px;
-  max-height: 1000px;
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+  max-width: 520px;
+  margin: 0 auto;
+  overflow: hidden;
+  color: var(--cream);
+}
+.cover-letter { position: absolute; inset: 0; }
+.cover-card {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
   overflow: hidden;
   background: #2b2a1e;
-  color: var(--cream);
   container-type: size;
 }
 .cover-stage {
@@ -171,15 +180,94 @@ html { -webkit-tap-highlight-color: transparent; }
 /* cover entrance: the photo settles, then the words, then the details */
 .cover-stage { transform: scale(1.06); opacity: 0; transition: transform 1.8s var(--ease-out), opacity 1s ease; }
 .cover-script span { opacity: 0; filter: blur(6px); transform: translateY(10px); transition: opacity 1s ease, filter 1s ease, transform 1.2s var(--ease-out); }
-.cover-names, .cover-date { opacity: 0; transform: translateY(8px); transition: opacity 0.9s ease 0.9s, transform 0.9s var(--ease-out) 0.9s; }
+.cover-names { opacity: 0; transform: translateY(8px); transition: opacity 0.9s ease 0.9s, transform 0.9s var(--ease-out) 0.9s; }
 .cover-bar { transform: translateY(100%); transition: transform 0.9s var(--ease-out) 1.1s; }
 .cover.is-in .cover-stage { transform: none; opacity: 1; }
 .cover.is-in .cover-script span { opacity: 1; filter: none; transform: none; }
 .cover.is-in .cover-script span:nth-child(1) { transition-delay: 0.35s; }
 .cover.is-in .cover-script span:nth-child(2) { transition-delay: 0.55s; }
 .cover.is-in .cover-script span:nth-child(3) { transition-delay: 0.75s; }
-.cover.is-in .cover-names, .cover.is-in .cover-date { opacity: 1; transform: none; }
+.cover.is-in .cover-names { opacity: 1; transform: none; }
 .cover.is-in .cover-bar { transform: none; }
+
+/* "Open the invitation": the card shrinks, a Victorian burgundy envelope closes
+   around it (liner showing until the flap folds over), the wax seal stamps it shut,
+   then the letter flies off (3.4s; COVER_EXIT_MS in App.jsx) */
+.env-defs { position: absolute; width: 0; height: 0; }
+.env-back, .env-pocket, .env-flap, .env-seal { position: absolute; opacity: 0; pointer-events: none; }
+.env-back, .env-pocket, .env-flap { left: 7%; width: 86%; }
+.env-back, .env-pocket { top: 31%; height: 52%; }
+.env-back { z-index: 1; filter: drop-shadow(0 28px 34px rgba(15, 4, 4, 0.65)) drop-shadow(0 2px 2px rgba(15, 4, 4, 0.5)); }
+.env-pocket { z-index: 3; filter: drop-shadow(0 -2px 3px rgba(15, 4, 4, 0.45)); }
+.env-flap {
+  z-index: 4;
+  top: 31%;
+  height: 33%;
+  transform-origin: 50% 0;
+}
+/* The fold is drawn in 2D (scaleY -1 → 1, liner face first, outer face after the
+   halfway point): 3D flips with hidden back faces are unreliable on phones. */
+.env-face { position: absolute; inset: 0; }
+.env-face svg { display: block; width: 100%; height: 100%; filter: drop-shadow(0 8px 6px rgba(15, 4, 4, 0.5)); }
+.env-flap-out { opacity: 0; }
+.env-seal {
+  z-index: 5;
+  left: 50%;
+  top: 62.4%;
+  width: 84px;
+  height: 84px;
+  margin: -42px 0 0 -42px;
+  filter: drop-shadow(0 3px 3px rgba(10, 2, 2, 0.6)) drop-shadow(0 8px 10px rgba(10, 2, 2, 0.35));
+}
+
+.cover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 42%, #5a3528 0%, #2a140f 60%, #120806 100%);
+  opacity: 0;
+}
+.cover.is-leaving::before { animation: env-backdrop 3.4s ease both; }
+.cover.is-leaving .cover-bar { transform: translateY(100%); transition: transform 0.4s ease-in; transition-delay: 0s; }
+.cover.is-leaving .cover-names { opacity: 0; transition: opacity 0.3s ease; transition-delay: 0s; }
+.cover.is-leaving .cover-card { animation: env-card 1.25s cubic-bezier(0.65, 0, 0.35, 1) both; }
+.cover.is-leaving .env-back { animation: env-fade 0.5s ease 0.4s both; }
+.cover.is-leaving .env-pocket { animation: env-pocket 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.95s both; }
+.cover.is-leaving .env-flap { animation: env-show 0.5s ease 0.4s both, env-flap 0.85s cubic-bezier(0.45, 0, 0.55, 1) 1.5s both; }
+.cover.is-leaving .env-flap-in { animation: env-face-off 0.85s 1.5s both; }
+.cover.is-leaving .env-flap-out { animation: env-face-on 0.85s 1.5s both; }
+.cover.is-leaving .env-seal { animation: env-seal 0.5s cubic-bezier(0.3, 1.4, 0.6, 1) 2.25s both; }
+.cover.is-leaving .cover-letter { animation: env-away 0.8s cubic-bezier(0.6, 0, 0.8, 0.4) 2.65s both; }
+
+@keyframes env-backdrop { 0% { opacity: 0; } 15%, 82% { opacity: 1; } 100% { opacity: 0; } }
+/* the card shrinks, then drops a little into the envelope */
+@keyframes env-card {
+  0% { transform: none; border-radius: 0; }
+  70% { transform: scale(0.46) translateY(-6%); border-radius: 6px; box-shadow: 0 18px 40px rgba(10, 2, 2, 0.5); }
+  100% { transform: scale(0.46) translateY(10%); border-radius: 6px; box-shadow: 0 18px 40px rgba(10, 2, 2, 0.5); }
+}
+@keyframes env-fade { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: none; } }
+@keyframes env-pocket { from { opacity: 1; transform: translateY(85vh); } to { opacity: 1; transform: none; } }
+@keyframes env-show { from { opacity: 0; } to { opacity: 1; } }
+/* open (pointing up, liner showing) → folded shut over the card; darker edge-on */
+@keyframes env-flap {
+  0% { transform: scaleY(-1); filter: brightness(0.92); }
+  50% { transform: scaleY(0); filter: brightness(0.6); }
+  100% { transform: scaleY(1); filter: brightness(1); }
+}
+@keyframes env-face-off { 0% { opacity: 1; animation-timing-function: step-end; } 50%, 100% { opacity: 0; } }
+@keyframes env-face-on { 0% { opacity: 0; animation-timing-function: step-end; } 50%, 100% { opacity: 1; } }
+@keyframes env-seal {
+  0% { opacity: 0; transform: scale(2.2) rotate(-24deg); }
+  70% { opacity: 1; transform: scale(0.94) rotate(2deg); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes env-away {
+  0% { transform: none; }
+  25% { transform: translateY(2%) rotate(1deg); }
+  100% { transform: translateY(-125%) rotate(-8deg) scale(0.85); }
+}
+
 .cover-script {
   position: absolute;
   top: 8.29cqh;
@@ -214,22 +302,6 @@ html { -webkit-tap-highlight-color: transparent; }
 }
 .music ~ .cover .cover-names { right: 72px; }
 
-.cover-date {
-  position: absolute;
-  left: 40px;
-  right: 40px;
-  bottom: 128px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  text-align: center;
-  font-size: 17px;
-  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.6);
-}
-.cover-date-line { display: flex; align-items: center; gap: 14px; width: 100%; }
-.cover-date-line span { flex: 1; height: 1px; background: rgba(246, 239, 226, 0.7); }
-.cover-date-line time { font-size: 24px; font-weight: 500; letter-spacing: 0.12em; line-height: 1; }
 
 .cover-bar {
   position: absolute;
@@ -252,10 +324,13 @@ html { -webkit-tap-highlight-color: transparent; }
   padding: 0 22px;
   border: 1.5px solid rgba(232, 211, 180, 0.7);
   border-radius: 999px;
+  background: none;
   color: var(--cream);
+  font: inherit;
   font-size: 20px;
   font-weight: 500;
   text-decoration: none;
+  cursor: pointer;
 }
 .cover-open svg { width: 20px; height: 20px; }
 
@@ -347,6 +422,8 @@ html { -webkit-tap-highlight-color: transparent; }
     radial-gradient(circle at 8px 6px, var(--page) 8px, transparent 8.5px) 0 0 / 16px 14px repeat-x,
     linear-gradient(var(--page), var(--page)) 0 0 / 100% 6px no-repeat;
 }
+/* everything placed on the collage sits above the lace edge */
+.collage-print, .collage-oval, .collage-couple { z-index: 2; }
 .collage-print { position: absolute; padding: 6px; background: #fbf6ef; box-shadow: 0 10px 22px -10px rgba(40, 20, 10, 0.55); }
 .collage-print img { width: 100%; height: 100%; object-fit: cover; }
 .collage-giverny { right: 18px; top: 0; width: 132px; height: 104px; transform: rotate(5deg); }
