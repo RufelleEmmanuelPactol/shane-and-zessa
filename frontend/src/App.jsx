@@ -4,9 +4,8 @@ import Music from './Music.jsx'
 import Rsvp from './Rsvp.jsx'
 import { addToCalendar } from './ics.js'
 import { ArrowRight, CalendarIcon } from './icons.jsx'
-import { MUSIC_URL, WEDDING } from './wedding.js'
+import { asset, MUSIC_URL, WEDDING } from './wedding.js'
 
-const img = (name) => `${import.meta.env.BASE_URL}images/${name}`
 
 const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
@@ -47,14 +46,14 @@ function Cover() {
       {/* The photo, the script and the cut-out couple share one stage, so the
           words sit behind the couple at the same spot on every screen size. */}
       <div className="cover-stage">
-        <img ref={photo} onLoad={() => setReady(true)} className="cover-photo" src={img('guitar-wide.jpg')} width="1200" height="800" fetchPriority="high"
+        <img ref={photo} onLoad={() => setReady(true)} onError={() => setReady(true)} className="cover-photo" src={asset('photos/cover-guitar.jpg')} width="1200" height="800" fetchPriority="high"
           alt="Shane playing guitar while Zessa, in a burgundy dress, leans on a branch and smiles at him" />
         <h1 className="cover-script">
           <span>Our</span>
           <span>wedding</span>
           <span>day</span>
         </h1>
-        <img className="cover-photo cover-cutout" src={img('guitar-wide-cutout.webp')} width="1200" height="800" alt="" />
+        <img className="cover-photo cover-cutout" src={asset('generated/cover-cutout.png')} width="1200" height="800" alt="" />
       </div>
 
       <p className="cover-names" aria-label="Shane and Zessa"><span>SHANE</span><span>ZESSA</span></p>
@@ -65,7 +64,7 @@ function Cover() {
       </div>
 
       <div className="cover-bar">
-        <img src={img('wax-seal.webp')} width="320" height="320" alt="" />
+        <img src={asset('photos/crest.webp')} width="320" height="320" alt="" />
         <a className="cover-open" href="#invitation">Open the invitation <ArrowRight /></a>
       </div>
     </header>
@@ -185,7 +184,7 @@ export default function App() {
       <main>
         <section className="invite" id="invitation">
           <div className="invite-photo">
-            <img src={img('picnic.jpg')} width="1400" height="933" loading="lazy"
+            <img src={asset('photos/picnic.jpg')} width="1400" height="933" loading="lazy"
               alt="Shane and Zessa lying head to head on a picnic quilt, laughing" />
           </div>
           <div className="invite-panel">
@@ -197,7 +196,7 @@ export default function App() {
         </section>
 
         <section className="when painted">
-          <img className="painting" src={img('paint-lake-nemi.webp')} width="1400" height="1091" loading="lazy" alt="" />
+          <img className="painting" src={asset('public-domain/corot-lake-nemi.jpg')} width="1400" height="1091" loading="lazy" alt="" />
           <div className="when-inner">
             <h2 className="title on-dark reveal">Save the date</h2>
             <div className="reveal"><Calendar iso={WEDDING.start} /></div>
@@ -208,7 +207,7 @@ export default function App() {
         </section>
 
         <section className="day painted">
-          <img className="painting" src={img('paint-mortefontaine.webp')} width="1400" height="1012" loading="lazy" alt="" />
+          <img className="painting" src={asset('public-domain/corot-souvenir-mortefontaine.jpg')} width="1400" height="1012" loading="lazy" alt="" />
           <div className="day-inner">
             <span className="rule" />
             <p className="label">ORDER OF THE DAY</p>
@@ -234,18 +233,18 @@ export default function App() {
 
           <div className="collage reveal" aria-hidden="true">
             <div className="collage-base">
-              <img src={img('paint-poppies.webp')} width="1400" height="1067" loading="lazy" alt="" />
+              <img src={asset('public-domain/monet-poppies.jpg')} width="1400" height="1067" loading="lazy" alt="" />
             </div>
             <div className="collage-print collage-giverny">
-              <img src={img('paint-giverny.webp')} width="600" height="535" loading="lazy" alt="" />
+              <img src={asset('public-domain/monet-garden-giverny.jpg')} width="600" height="535" loading="lazy" alt="" />
             </div>
             <div className="collage-oval">
-              <img src={img('paint-roses.webp')} width="800" height="654" loading="lazy" alt="" />
+              <img src={asset('public-domain/fantin-roses.jpg')} width="800" height="654" loading="lazy" alt="" />
             </div>
             <div className="collage-print collage-bordighera">
-              <img src={img('paint-bordighera.webp')} width="500" height="402" loading="lazy" alt="" />
+              <img src={asset('public-domain/monet-bordighera.jpg')} width="500" height="402" loading="lazy" alt="" />
             </div>
-            <img className="collage-couple" src={img('couple-standing.webp')} width="806" height="1500" loading="lazy" alt="" />
+            <img className="collage-couple" src={asset('generated/day-what-to-wear-fixed.png')} width="806" height="1500" loading="lazy" alt="" />
           </div>
 
           <p className="label muted">OUR COLOURS</p>
@@ -257,7 +256,7 @@ export default function App() {
         </section>
 
         <section className="words" aria-label="Just us, golden hour, long dinners, happy tears, your favorite song, candlelight, forever starts here">
-          <img src={img('portrait-field.jpg')} width="900" height="1200" loading="lazy"
+          <img src={asset('photos/field-holding-hands.jpg')} width="900" height="1200" loading="lazy"
             alt="Zessa and Shane holding hands in a field, both in white shirts and jeans" />
           {WORDS.map(([html, pos]) => (
             <span key={html} style={pos} aria-hidden="true" dangerouslySetInnerHTML={{ __html: html }} />
@@ -265,7 +264,7 @@ export default function App() {
         </section>
 
         <section className="rsvp painted" id="rsvp">
-          <img className="painting" src={img('paint-meadow.webp')} width="1400" height="1010" loading="lazy" alt="" />
+          <img className="painting" src={asset('public-domain/monet-meadow.jpg')} width="1400" height="1010" loading="lazy" alt="" />
           <div className="rsvp-inner">
             <div className="rsvp-head">
               <p className="label">KINDLY REPLY</p>
@@ -279,11 +278,11 @@ export default function App() {
 
       <footer className="finale">
         <div className="arch">
-          <img src={img('paint-roses.webp')} width="800" height="654" loading="lazy" alt="Detail of Fantin-Latour’s painting Basket of Roses" />
+          <img src={asset('public-domain/fantin-roses.jpg')} width="800" height="654" loading="lazy" alt="Detail of Fantin-Latour’s painting Basket of Roses" />
         </div>
         <p className="title on-dark">See you soon</p>
         <Countdown iso={WEDDING.start} />
-        <img className="seal-foot" src={img('wax-seal.webp')} width="320" height="320" alt="" loading="lazy" />
+        <img className="seal-foot" src={asset('photos/crest.webp')} width="320" height="320" alt="" loading="lazy" />
         <p className="lead">With love,<br />Shane &amp; Zessa</p>
       </footer>
     </>

@@ -58,7 +58,7 @@ export default function Music({ src }) {
         ref={audio}
         src={src}
         loop
-        preload="auto"
+        preload="none"
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
       />

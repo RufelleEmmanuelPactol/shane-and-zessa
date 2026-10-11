@@ -1,12 +1,10 @@
 # shane-and-zessa
 
-Phone-only wedding invitation and RSVP page for Shane & Zessa. React (Vite) for the page; Django for storing replies (not deployed yet).
+Phone-only wedding invitation and RSVP page for Shane & Zessa. React (Vite) for the page; Django for storing replies and serving photos, paintings and music from S3.
 
 ## Deploy (Railway)
 
-The root `Dockerfile` builds the page and serves it as a static site with Caddy on `$PORT` (8080 if unset). Replies are collected without a backend for now (see below).
-
-To deploy with RSVPs later, point Railway at `Dockerfile.django` (set the `RAILWAY_DOCKERFILE_PATH` variable), add `DJANGO_SECRET_KEY`, and attach a volume so replies survive redeploys.
+Deploy with `Dockerfile.django` (set the `RAILWAY_DOCKERFILE_PATH` variable), add `DJANGO_SECRET_KEY` and the S3 settings, and attach a volume so replies survive redeploys. The root `Dockerfile` is the old static-only build: it has no `/media` or `/api`, so images, music and replies won't work there.
 
 ## Work on the page
 
@@ -14,7 +12,7 @@ To deploy with RSVPs later, point Railway at `Dockerfile.django` (set the `RAILW
 cd frontend && npm install && npm run dev
 ```
 
-Open http://localhost:5173/?preview on a laptop. The site is phone-only: laptops get a "use your phone" screen with a QR code and sideways tablets get a "rotate" screen; `?preview` skips that. The dev server shows the RSVP form and forwards `/api` to Django on port 8000 if it is running.
+Open http://localhost:5173/?preview on a laptop. The site is phone-only: laptops get a "use your phone" screen with a QR code and sideways tablets get a "rotate" screen; `?preview` skips that. The dev server forwards `/api` and `/media` to Django on port 8000, so run the backend too or images and replies won't load.
 
 ## Run the backend locally
 
@@ -35,10 +33,10 @@ Everything you'd change lives in `frontend/src/wedding.js`:
 - `MUSIC_URL`: the Air on the G String recording. It plays on load, or on the guest's first tap where the phone blocks autoplay. Empty hides the music button
 - `CONTACT_URL`: where "Message Shane & Zessa" goes
 
-## Replies without a backend
+## Replies
 
-With no backend, the reply flow keeps each reply on the guest's phone and the thank-you screen asks them to send it to you (share sheet, or copy and open `CONTACT_URL`). Build with `VITE_RSVP=on` to also post replies to the Django API.
+The reply flow posts to `POST /api/rsvp/`. Guest names, a sponsor's complete name and the note go in the reply's message. A changed reply is saved as a new entry marked "Updated reply".
 
-## Images
+## Images and music
 
-`frontend/public/images/`. The cover cut-out (`guitar-wide-cutout.webp`) is the same size as `guitar-wide.jpg` so "Our wedding day" sits between them. The paintings (`paint-*.webp`) are public-domain works by Corot, Monet and Fantin-Latour from Wikimedia Commons.
+All photos, paintings, cut-outs and the music live in a private S3 bucket and are served by Django at `/media/<key>`, which redirects to a short-lived signed link. Front-end code uses `asset('<key>')` from `frontend/src/wedding.js`; never put S3 URLs or credentials in it. The cover cut-out (`generated/cover-cutout.png`) is pixel-aligned to `photos/cover-guitar.jpg` so "Our wedding day" sits between them. The paintings are public-domain works by Corot, Monet and Fantin-Latour.

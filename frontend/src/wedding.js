@@ -1,3 +1,7 @@
+// Photos, paintings and music live in S3 and are served by Django at /media/<key>
+// (it redirects to a short-lived signed link). Never put S3 URLs in front-end code.
+export const asset = (key) => `/media/${key}`
+
 // EDIT: the wedding details live here.
 export const WEDDING = {
   start: '2026-11-29T15:00:00+08:00',
@@ -26,11 +30,11 @@ export const WEDDING = {
 // Where "Message Shane & Zessa" goes, for guests who can't find their name.
 export const CONTACT_URL = 'https://www.instagram.com/regormortiz/'
 
-// Background music (Air on the G String). Leave empty to hide the music button.
-export const MUSIC_URL = ''
+// Background music. Leave empty to hide the music button.
+export const MUSIC_URL = asset('audio/air-on-the-g-string.mp3')
 
-// EDIT: the guest list. There is no backend yet, so the name search runs on
-// this list in the browser. `seats` includes the guest themselves; sponsors are
+// EDIT: the guest list. The name search runs on this list in the browser
+// (replies themselves are saved by the backend). `seats` includes the guest themselves; sponsors are
 // asked for their complete name (for the programme), everyone else isn't.
 // `aka` holds other names a guest might type (nicknames, surnames).
 export const GUESTS = [

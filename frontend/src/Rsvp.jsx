@@ -1,14 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
-import { CONTACT_URL, GUESTS, WEDDING } from './wedding.js'
+import { asset, CONTACT_URL, GUESTS, WEDDING } from './wedding.js'
 import { addToCalendar } from './ics.js'
 import { CalendarIcon, ChevronLeft, MessageIcon, SearchIcon } from './icons.jsx'
 
-// Replies go to the Django backend only when it's switched on. Until then each
-// reply is kept on the guest's phone and they send it to us with the share sheet.
-const API_ON = import.meta.env.VITE_RSVP === 'on'
+// Replies are saved by the Django backend (POST /api/rsvp/). A copy is kept on
+// the guest's phone so they see their reply when they come back.
 const SAVED = 'sz-rsvp'
 
-const fold = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim()
+const fold = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
 
 function search(query) {
   const q = fold(query)
@@ -34,8 +33,8 @@ function summary(r) {
   return others.length ? `Joyfully accepts\n${[r.names[0], ...others].join(', ')}` : 'Joyfully accepts'
 }
 
-function replyText(r) {
-  const lines = [`RSVP from ${r.name}: ${r.attending === 'yes' ? 'joyfully accepts' : 'regretfully declines'}.`]
+function replyText(r, updated) {
+  const lines = [`${updated ? 'Updated reply' : 'RSVP'} from ${r.name}: ${r.attending === 'yes' ? 'joyfully accepts' : 'regretfully declines'}.`]
   if (r.fullName) lines.push(`Complete name: ${r.fullName}`)
   if (r.attending === 'yes') lines.push(`Coming (${r.names.length}): ${r.names.join(', ')}`)
   if (r.note) lines.push(`Note: ${r.note}`)
@@ -71,7 +70,6 @@ function Flow() {
   const [note, setNote] = useState('')
   const [error, setError] = useState('')
   const [sending, setSending] = useState(false)
-  const [shared, setShared] = useState('')
   const card = useRef(null)
   const first = useRef(true)
 
@@ -129,46 +127,29 @@ function Flow() {
     const r = reply()
     setSending(true)
     setError('')
-    if (API_ON) {
-      try {
-        const res = await fetch('/api/rsvp/', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: r.fullName || r.name,
-            attending: r.attending,
-            guests: r.names.length,
-            message: replyText(r),
-          }),
-        })
-        if (!res.ok) throw new Error()
-      } catch {
-        setSending(false)
-        return setError('We couldn’t send that just now. Please try again in a moment.')
-      }
+    try {
+      const res = await fetch('/api/rsvp/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: r.fullName || r.name,
+          attending: r.attending,
+          guests: r.names.length,
+          // guest names, sponsor's full name and the note ride in the message
+          message: replyText(r, !!saved),
+        }),
+      })
+      if (!res.ok) throw new Error()
+    } catch {
+      setSending(false)
+      return setError('We couldn’t send that just now. Please check your connection and try again.')
     }
     try {
       localStorage.setItem(SAVED, JSON.stringify(r))
     } catch { /* private mode: keep it in memory only */ }
     setSaved(r)
     setSending(false)
-    setShared('')
     go('done')
-  }
-
-  async function shareReply() {
-    const text = replyText(saved)
-    try {
-      if (navigator.share) {
-        await navigator.share({ text })
-        return setShared('Thank you, we’ll see it there.')
-      }
-      await navigator.clipboard.writeText(text)
-      setShared('Copied. Paste it into a message to us.')
-      window.open(CONTACT_URL, '_blank', 'noopener')
-    } catch {
-      /* the guest closed the share sheet */
-    }
   }
 
   function change() {
@@ -195,7 +176,7 @@ function Flow() {
     const yes = saved.attending === 'yes'
     return (
       <div className="reply-card thanks" ref={card} key={step} data-dir={dir}>
-        <img className="thanks-seal" src={`${import.meta.env.BASE_URL}images/wax-seal.webp`} width="320" height="320" alt="" />
+        <img className="thanks-seal" src={asset('photos/crest.webp')} width="320" height="320" alt="" />
         <h3 className="flow-title" tabIndex={-1}>Thank you, {saved.name}</h3>
         <p className="body">
           {yes ? 'We’re so happy you’ll be there. See you on the 29th.' : 'We’ll miss you, and we’re grateful you let us know.'}
@@ -204,15 +185,6 @@ function Flow() {
           <p className="label">YOUR REPLY</p>
           <p className="summary-text">{summary(saved)}</p>
         </div>
-        {!API_ON && (
-          <>
-            <p className="body small">One last step: send your reply to us so it reaches our list.</p>
-            <button type="button" className="btn" onClick={shareReply}>
-              <MessageIcon /> Send it to Shane &amp; Zessa
-            </button>
-            {shared && <p className="body small" role="status">{shared}</p>}
-          </>
-        )}
         {yes && (
           <button type="button" className="btn btn-line" onClick={addToCalendar}>
             <CalendarIcon /> Add to my calendar
