@@ -4,7 +4,7 @@ Phone-only wedding invitation and RSVP page for Shane & Zessa. React (Vite) for 
 
 ## Deploy (Railway)
 
-The root `Dockerfile` builds the page and serves it as a static site with Caddy on `$PORT` (8080 if unset). The RSVP section shows "Replies open soon" until the backend is switched on.
+The root `Dockerfile` builds the page and serves it as a static site with Caddy on `$PORT` (8080 if unset). Replies are collected without a backend for now (see below).
 
 To deploy with RSVPs later, point Railway at `Dockerfile.django` (set the `RAILWAY_DOCKERFILE_PATH` variable), add `DJANGO_SECRET_KEY`, and attach a volume so replies survive redeploys.
 
@@ -28,8 +28,17 @@ Open http://localhost:8000/?preview. Replies are at http://localhost:8000/admin 
 
 ## Edit the details
 
-Date, place, reply-by date, the day's timeline and the dress-code colours are in the `WEDDING` object at the top of `frontend/src/App.jsx`.
+Everything you'd change lives in `frontend/src/wedding.js`:
+
+- `WEDDING`: date, place, reply-by date, the day's timeline, dress code and colours
+- `GUESTS`: the guest list the "Find your name" search uses. `seats` includes the guest; `sponsor: true` asks for their complete name; `aka` adds other names they might type
+- `MUSIC_URL`: the Air on the G String recording. It plays on load, or on the guest's first tap where the phone blocks autoplay. Empty hides the music button
+- `CONTACT_URL`: where "Message Shane & Zessa" goes
+
+## Replies without a backend
+
+With no backend, the reply flow keeps each reply on the guest's phone and the thank-you screen asks them to send it to you (share sheet, or copy and open `CONTACT_URL`). Build with `VITE_RSVP=on` to also post replies to the Django API.
 
 ## Images
 
-`frontend/public/images/`. The guitar cutout was made with macOS subject lifting and hand-repaired around the head. The paper textures, deckled card and wax seal were rendered procedurally.
+`frontend/public/images/`. The cover cut-out (`guitar-wide-cutout.webp`) is the same size as `guitar-wide.jpg` so "Our wedding day" sits between them. The paintings (`paint-*.webp`) are public-domain works by Corot, Monet and Fantin-Latour from Wikimedia Commons.

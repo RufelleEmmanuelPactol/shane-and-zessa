@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
-import { Corner, Flourish } from './Doodles.jsx'
 
 // The site is made for phones held upright.
 // - touch screens in landscape (iPad, or a phone turned sideways): ask to rotate
@@ -35,7 +34,7 @@ function Qr() {
   const [src, setSrc] = useState('')
   useEffect(() => {
     const url = location.origin + location.pathname
-    QRCode.toDataURL(url, { margin: 1, width: 360, color: { dark: '#4e1219', light: '#f6efe2' } })
+    QRCode.toDataURL(url, { margin: 1, width: 360, color: { dark: '#621828', light: '#f6eee3' } })
       .then(setSrc)
       .catch(() => setSrc(''))
   }, [])
@@ -46,9 +45,8 @@ export default function Gate({ kind }) {
   return (
     <div className="gate">
       <div className="gate-card">
-        <Corner className="c-tl" /><Corner className="c-tr" /><Corner className="c-bl" /><Corner className="c-br" />
         <p className="gate-names">Shane <span>&amp;</span> Zessa</p>
-        <Flourish />
+        <span className="rule" />
         {kind === 'rotate' ? (
           <>
             <svg className="gate-rotate" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
