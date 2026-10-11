@@ -16,6 +16,8 @@ function search(query) {
   return GUESTS.filter((g) => [g.name, ...(g.aka ?? [])].some((n) => fold(n).includes(q)))
 }
 
+const ORDER = ['find', 'attend', 'party', 'note', 'done']
+
 const seatsText = (n) => (n === 1 ? '1 seat' : `${n} seats`)
 
 function load() {
@@ -56,9 +58,10 @@ function Steps({ n, onBack }) {
   )
 }
 
-export default function Rsvp() {
+function Flow() {
   const [saved, setSaved] = useState(load)
   const [step, setStep] = useState(saved ? 'done' : 'find')
+  const [dir, setDir] = useState('none')
   const [query, setQuery] = useState('')
   const [pick, setPick] = useState(null)
   const [attending, setAttending] = useState('')
@@ -78,12 +81,15 @@ export default function Rsvp() {
       first.current = false
       return
     }
-    card.current?.querySelector('h3')?.focus()
-    card.current?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+    card.current?.querySelector('h3')?.focus({ preventScroll: true })
+    const top = card.current?.getBoundingClientRect().top ?? 0
+    // only scroll when the card's top has gone off screen
+    if (top < 0) card.current.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
   }, [step])
 
   const go = (s) => {
     setError('')
+    setDir(ORDER.indexOf(s) < ORDER.indexOf(step) ? 'back' : 'forward')
     setStep(s)
   }
 
@@ -188,7 +194,7 @@ export default function Rsvp() {
   if (step === 'done' && saved) {
     const yes = saved.attending === 'yes'
     return (
-      <div className="reply-card thanks" ref={card}>
+      <div className="reply-card thanks" ref={card} key={step} data-dir={dir}>
         <img className="thanks-seal" src={`${import.meta.env.BASE_URL}images/wax-seal.webp`} width="320" height="320" alt="" />
         <h3 className="flow-title" tabIndex={-1}>Thank you, {saved.name}</h3>
         <p className="body">
@@ -220,7 +226,7 @@ export default function Rsvp() {
   if (step === 'find') {
     const noMatch = query.trim().length >= 2 && results.length === 0
     return (
-      <div className="reply-card" ref={card}>
+      <div className="reply-card" ref={card} key={step} data-dir={dir}>
         <Steps n={1} />
         <h3 className="flow-title" tabIndex={-1}>Find your name</h3>
         <label htmlFor="find" className="body">Type your name as it appears on your invitation.</label>
@@ -268,7 +274,7 @@ export default function Rsvp() {
 
   if (step === 'attend') {
     return (
-      <div className="reply-card" ref={card}>
+      <div className="reply-card" ref={card} key={step} data-dir={dir}>
         <Steps n={2} onBack={() => go('find')} />
         <p className="chip">
           Hi, <strong>{pick.name}</strong>! {seats === 1 ? 'We’ve saved a seat for you.' : `We’ve saved ${seats} seats for your party.`}
@@ -300,7 +306,7 @@ export default function Rsvp() {
 
   if (step === 'party') {
     return (
-      <div className="reply-card" ref={card}>
+      <div className="reply-card" ref={card} key={step} data-dir={dir}>
         <Steps n={3} onBack={() => go('attend')} />
         <h3 className="flow-title" tabIndex={-1}>Who’s coming?</h3>
 
@@ -317,7 +323,7 @@ export default function Rsvp() {
               <span id="guests-label">Guests, including you</span>
               <div role="group" aria-labelledby="guests-label">
                 <button type="button" aria-label="One fewer guest" disabled={count <= 1} onClick={() => setCount(count - 1)}>−</button>
-                <span aria-live="polite">{count}</span>
+                <span aria-live="polite" key={count} className="tick">{count}</span>
                 <button type="button" aria-label="One more guest" disabled={count >= seats} onClick={() => setCount(count + 1)}>+</button>
               </div>
             </div>
@@ -356,7 +362,7 @@ export default function Rsvp() {
   // step === 'note'
   const r = reply()
   return (
-    <div className="reply-card" ref={card}>
+    <div className="reply-card" ref={card} key={step} data-dir={dir}>
       <Steps n={4} onBack={() => go(attending === 'yes' ? 'party' : 'attend')} />
       <h3 className="flow-title" tabIndex={-1}>A note for us</h3>
       <label htmlFor="note" className="body">
@@ -373,6 +379,24 @@ export default function Rsvp() {
         {sending ? 'Sending…' : 'Send our reply'}
       </button>
       <p className="hint">Kindly reply on or before {WEDDING.replyBy}.</p>
+    </div>
+  )
+}
+
+// Animates the card's height as steps change, so the page doesn't jump.
+export default function Rsvp() {
+  const inner = useRef(null)
+  const [height, setHeight] = useState()
+  useEffect(() => {
+    const el = inner.current
+    if (!el || !('ResizeObserver' in window)) return
+    const ro = new ResizeObserver(() => setHeight(el.offsetHeight))
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+  return (
+    <div className="reply-shell" style={{ height }}>
+      <div ref={inner}><Flow /></div>
     </div>
   )
 }

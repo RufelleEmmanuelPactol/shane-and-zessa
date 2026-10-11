@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Gate, { useGate } from './Gate.jsx'
 import Music from './Music.jsx'
 import Rsvp from './Rsvp.jsx'
@@ -35,12 +35,19 @@ function useReveal(ready) {
 }
 
 function Cover() {
+  // play the entrance once the photo is ready, so it never animates over a blank
+  const photo = useRef(null)
+  const [ready, setReady] = useState(false)
+  useEffect(() => {
+    if (photo.current?.complete) setReady(true)
+  }, [])
+
   return (
-    <header className="cover">
+    <header className={ready ? 'cover is-in' : 'cover'}>
       {/* The photo, the script and the cut-out couple share one stage, so the
           words sit behind the couple at the same spot on every screen size. */}
       <div className="cover-stage">
-        <img className="cover-photo" src={img('guitar-wide.jpg')} width="1200" height="800" fetchPriority="high"
+        <img ref={photo} onLoad={() => setReady(true)} className="cover-photo" src={img('guitar-wide.jpg')} width="1200" height="800" fetchPriority="high"
           alt="Shane playing guitar while Zessa, in a burgundy dress, leans on a branch and smiles at him" />
         <h1 className="cover-script">
           <span>Our</span>
@@ -207,8 +214,8 @@ export default function App() {
             <p className="label">ORDER OF THE DAY</p>
             <h2 className="title reveal">The day</h2>
             <ol className="timeline">
-              {WEDDING.day.map(({ time, title, where }) => (
-                <li key={title} className="reveal">
+              {WEDDING.day.map(({ time, title, where }, i) => (
+                <li key={title} className="reveal" style={{ '--d': `${i * 80}ms` }}>
                   <span className="tl-time">{time}</span>
                   <span>
                     <span className="tl-title">{title}</span>
