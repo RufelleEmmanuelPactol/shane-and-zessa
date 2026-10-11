@@ -53,7 +53,7 @@ function Cover() {
           <span>wedding</span>
           <span>day</span>
         </h1>
-        <img className="cover-photo cover-cutout" src={asset('generated/cover-cutout.png')} width="1200" height="800" alt="" />
+        <img className="cover-photo cover-cutout" src={asset('web/cover-cutout.webp')} width="1200" height="800" alt="" />
       </div>
 
       <p className="cover-names" aria-label="Shane and Zessa"><span>SHANE</span><span>ZESSA</span></p>
@@ -196,7 +196,7 @@ export default function App() {
         </section>
 
         <section className="when painted">
-          <img className="painting" src={asset('public-domain/corot-lake-nemi.jpg')} width="1400" height="1091" loading="lazy" alt="" />
+          <img className="painting" src={asset('web/corot-lake-nemi.webp')} width="1403" height="1871" loading="lazy" alt="" />
           <div className="when-inner">
             <h2 className="title on-dark reveal">Save the date</h2>
             <div className="reveal"><Calendar iso={WEDDING.start} /></div>
@@ -207,7 +207,7 @@ export default function App() {
         </section>
 
         <section className="day painted">
-          <img className="painting" src={asset('public-domain/corot-souvenir-mortefontaine.jpg')} width="1400" height="1012" loading="lazy" alt="" />
+          <img className="painting" src={asset('web/corot-souvenir-mortefontaine.webp')} width="1475" height="1735" loading="lazy" alt="" />
           <div className="day-inner">
             <span className="rule" />
             <p className="label">ORDER OF THE DAY</p>
@@ -233,18 +233,18 @@ export default function App() {
 
           <div className="collage reveal" aria-hidden="true">
             <div className="collage-base">
-              <img src={asset('public-domain/monet-poppies.jpg')} width="1400" height="1067" loading="lazy" alt="" />
+              <img src={asset('web/monet-poppies.webp')} width="1750" height="1400" loading="lazy" alt="" />
             </div>
             <div className="collage-print collage-giverny">
-              <img src={asset('public-domain/monet-garden-giverny.jpg')} width="600" height="535" loading="lazy" alt="" />
+              <img src={asset('web/monet-garden-giverny.webp')} width="600" height="535" loading="lazy" alt="" />
             </div>
             <div className="collage-oval">
-              <img src={asset('public-domain/fantin-roses.jpg')} width="800" height="654" loading="lazy" alt="" />
+              <img src={asset('web/fantin-roses.webp')} width="800" height="654" loading="lazy" alt="" />
             </div>
             <div className="collage-print collage-bordighera">
-              <img src={asset('public-domain/monet-bordighera.jpg')} width="500" height="402" loading="lazy" alt="" />
+              <img src={asset('web/monet-bordighera.webp')} width="600" height="483" loading="lazy" alt="" />
             </div>
-            <img className="collage-couple" src={asset('generated/day-what-to-wear-fixed.png')} width="806" height="1500" loading="lazy" alt="" />
+            <img className="collage-couple" src={asset('web/day-what-to-wear-fixed.webp')} width="806" height="1500" loading="lazy" alt="" />
           </div>
 
           <p className="label muted">OUR COLOURS</p>
@@ -264,7 +264,7 @@ export default function App() {
         </section>
 
         <section className="rsvp painted" id="rsvp">
-          <img className="painting" src={asset('public-domain/monet-meadow.jpg')} width="1400" height="1010" loading="lazy" alt="" />
+          <img className="painting" src={asset('web/monet-meadow.webp')} width="1299" height="1732" loading="lazy" alt="" />
           <div className="rsvp-inner">
             <div className="rsvp-head">
               <p className="label">KINDLY REPLY</p>
@@ -278,7 +278,7 @@ export default function App() {
 
       <footer className="finale">
         <div className="arch">
-          <img src={asset('public-domain/fantin-roses.jpg')} width="800" height="654" loading="lazy" alt="Detail of Fantin-Latour’s painting Basket of Roses" />
+          <img src={asset('web/fantin-roses.webp')} width="800" height="654" loading="lazy" alt="Detail of Fantin-Latour’s painting Basket of Roses" />
         </div>
         <p className="title on-dark">See you soon</p>
         <Countdown iso={WEDDING.start} />
