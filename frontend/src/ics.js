@@ -1,4 +1,7 @@
-import { WEDDING } from './wedding.js'
+import { WEDDING, mapUrl } from './wedding.js'
+
+// Escapes text for an .ics field.
+const text = (s) => s.replace(/[\\;,]/g, (c) => `\\${c}`)
 
 const stamp = (iso) => new Date(iso).toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '')
 
@@ -14,7 +17,8 @@ export function addToCalendar() {
     `DTSTART:${stamp(WEDDING.start)}`,
     `DTEND:${stamp(WEDDING.end)}`,
     'SUMMARY:Shane & Zessa’s wedding',
-    `LOCATION:${WEDDING.place.replace(/,/g, '\\,')}`,
+    `LOCATION:${text(`${WEDDING.ceremony.name}, ${WEDDING.ceremony.address}`)}`,
+    `DESCRIPTION:${text(`Reception: ${WEDDING.reception.name}, ${WEDDING.reception.address}`)}\\n${mapUrl(WEDDING.reception)}`,
     'END:VEVENT',
     'END:VCALENDAR',
   ].join('\r\n')

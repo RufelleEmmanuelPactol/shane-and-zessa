@@ -249,7 +249,7 @@ function Flow() {
       <div className="reply-card" ref={card} key={step} data-dir={dir}>
         <Steps n={2} onBack={() => go('find')} />
         <p className="chip">
-          Hi, <strong>{pick.name}</strong>! {seats === 1 ? 'We’ve saved a seat for you.' : `We’ve saved ${seats} seats for your party.`}
+          Hi, <strong>{pick.name}</strong>! {seats === 1 ? 'We’ve saved a seat for you.' : `We’ve saved ${seats} seats for your party.`} Only the guests named on your reply can be seated.
         </p>
         <h3 className="flow-title" tabIndex={-1} id="attend-q">Can you make it?</h3>
         <div className="choices" role="radiogroup" aria-labelledby="attend-q">
@@ -299,7 +299,7 @@ function Flow() {
                 <button type="button" aria-label="One more guest" disabled={count >= seats} onClick={() => setCount(count + 1)}>+</button>
               </div>
             </div>
-            <p className="hint">Your invitation has {seats} seats.</p>
+            <p className="hint">Your invitation has {seats} seats. We can’t add more.</p>
           </>
         )}
 
@@ -324,7 +324,7 @@ function Flow() {
           </div>
         ))}
 
-        <p className="kids">To keep the ceremony solemn, we kindly ask that any children who attend stay quiet and well-behaved throughout.</p>
+        <p className="kids">Our wedding is an adults-only celebration. We kindly ask that you leave the little ones at home.</p>
         {err}
         <button type="button" className="btn" onClick={afterParty}>Continue</button>
       </div>

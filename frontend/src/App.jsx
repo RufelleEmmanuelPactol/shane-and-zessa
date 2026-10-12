@@ -3,8 +3,8 @@ import Gate, { useGate } from './Gate.jsx'
 import Music from './Music.jsx'
 import Rsvp from './Rsvp.jsx'
 import { addToCalendar } from './ics.js'
-import { ArrowRight, CalendarIcon } from './icons.jsx'
-import { asset, MUSIC_URL, WEDDING } from './wedding.js'
+import { ArrowRight, CalendarIcon, PinIcon } from './icons.jsx'
+import { asset, mapUrl, MUSIC_URL, WEDDING } from './wedding.js'
 
 
 const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']
@@ -324,6 +324,13 @@ export default function App() {
                 </li>
               ))}
             </ol>
+            <div className="venues">
+              {[['ceremony', WEDDING.ceremony], ['reception', WEDDING.reception]].map(([label, venue]) => (
+                <a key={label} className="btn btn-cream reveal" href={mapUrl(venue)} target="_blank" rel="noopener">
+                  <PinIcon /> See {label}
+                </a>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -370,7 +377,12 @@ export default function App() {
             <div className="rsvp-head">
               <p className="label">KINDLY REPLY</p>
               <h2 className="title title-sm">Will you join us?</h2>
-              <p className="lead">We would be so happy to have you with us. Kindly let us know whether you can come on or before {WEDDING.replyBy}.</p>
+              <p className="lead">We would be so happy to have you with us. Please reply on or before <strong>{WEDDING.replyBy}</strong>.</p>
+              <p className="rsvp-rule"><strong>No reply, no seat.</strong> Seats and meals are prepared only for guests who have replied. If we haven’t heard from you by {WEDDING.replyBy}, we won’t be able to keep a place for you.</p>
+              <div className="rsvp-policy">
+                <p className="label">CHILDREN &amp; PLUS ONES</p>
+                <p>Our wedding is an adults-only celebration, and because of limited space we can only welcome the guests named on your invitation. Please don’t bring children or anyone who isn’t listed. For any questions, message Shane or Zessa directly.</p>
+              </div>
             </div>
             <Rsvp />
           </div>

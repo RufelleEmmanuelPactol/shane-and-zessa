@@ -10,6 +10,11 @@ export const WEDDING = {
   dateShort: '29 · 11 · 26',
   dateLine: 'Sunday, at two in the afternoon',
   place: 'Sindangan, Zamboanga del Norte',
+  // EDIT: the venues. The "See ceremony" / "See reception" buttons open these in Google Maps,
+  // and the calendar invite carries the ceremony's address. Paste a Google Maps share link
+  // into `map` to drop guests on an exact pin; otherwise Maps searches for name + address.
+  ceremony: { name: 'Ceremony venue', address: 'Sindangan, Zamboanga del Norte', map: '' },
+  reception: { name: 'Reception venue', address: 'Sindangan, Zamboanga del Norte', map: '' },
   replyBy: 'Sunday, November 1, 2026',
   day: [
     { time: '1:30 pm', title: 'Seating begins' },
@@ -28,6 +33,10 @@ export const WEDDING = {
     { name: 'Cream', hex: '#f6eee3' },
   ],
 }
+
+// A Google Maps link for a venue; on phones it opens the Maps app.
+export const mapUrl = ({ name, address, map }) =>
+  map || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${name}, ${address}`)}`
 
 // Where "Message Shane & Zessa" goes, for guests who can't find their name.
 export const CONTACT_URL = 'https://www.instagram.com/regormortiz/'
