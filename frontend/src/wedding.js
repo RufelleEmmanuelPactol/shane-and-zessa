@@ -42,14 +42,7 @@ export const mapUrl = ({ name, address, map }) =>
 export const CONTACT_URL = 'https://www.instagram.com/regormortiz/'
 
 // Background music. Leave empty to hide the music button.
-export const MUSIC_URL = asset('audio/air-on-the-g-string-v3.mp3')
+export const MUSIC_URL = asset('audio/kay-tagal-kitang-hinintay.mp3')
 
-// EDIT: the guest list. The name search runs on this list in the browser
-// (replies themselves are saved by the backend). `seats` includes the guest themselves; sponsors are
-// asked for their complete name (for the programme), everyone else isn't.
-// `aka` holds other names a guest might type (nicknames, surnames).
-export const GUESTS = [
-  { name: 'Rhian', seats: 2 },
-  { name: 'Sample Guest', seats: 1 },
-  { name: 'Sample Sponsor', seats: 2, sponsor: true },
-]
+// The guest list is not here: it lives in the backend database (the repo is
+// public). Import it with `manage.py import_guests` or Admin → Parties → Import.

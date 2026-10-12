@@ -377,12 +377,15 @@ export default function App() {
             <div className="rsvp-head">
               <p className="label">KINDLY REPLY</p>
               <h2 className="title title-sm">Will you join us?</h2>
-              <p className="lead">We would be so happy to have you with us. Please reply on or before <strong>{WEDDING.replyBy}</strong>.</p>
-              <p className="rsvp-rule"><strong>No reply, no seat.</strong> Seats and meals are prepared only for guests who have replied. If we haven’t heard from you by {WEDDING.replyBy}, we won’t be able to keep a place for you.</p>
-              <div className="rsvp-policy">
-                <p className="label">CHILDREN &amp; PLUS ONES</p>
-                <p>Our wedding is an adults-only celebration, and because of limited space we can only welcome the guests named on your invitation. Please don’t bring children or anyone who isn’t listed. For any questions, message Shane or Zessa directly.</p>
+              <p className="lead">We would be so happy to celebrate with you.</p>
+              <div className="reply-by">
+                <span>The favour of a reply is requested by</span>
+                <strong>{WEDDING.replyBy}</strong>
               </div>
+              <p className="rsvp-rule">
+                <span className="rsvp-rule-title">No reply, no seat</span>
+                Seats and meals are prepared only for guests who have replied, so we can’t keep a place without one.
+              </p>
             </div>
             <Rsvp />
           </div>

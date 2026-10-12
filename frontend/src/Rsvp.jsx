@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { asset, CONTACT_URL, GUESTS, WEDDING } from './wedding.js'
+import { asset, CONTACT_URL, WEDDING } from './wedding.js'
 import { addToCalendar } from './ics.js'
 import { CalendarIcon, ChevronLeft, MessageIcon, SearchIcon } from './icons.jsx'
 
@@ -7,12 +7,27 @@ import { CalendarIcon, ChevronLeft, MessageIcon, SearchIcon } from './icons.jsx'
 // the guest's phone so they see their reply when they come back.
 const SAVED = 'sz-rsvp'
 
-const fold = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
-
-function search(query) {
-  const q = fold(query)
-  if (q.length < 2) return []
-  return GUESTS.filter((g) => [g.name, ...(g.aka ?? [])].some((n) => fold(n).includes(q)))
+// The guest list lives in the backend (the repo is public); the page only
+// ever sees the names that match what the guest typed.
+function useGuestSearch(query, active) {
+  const [state, setState] = useState({ q: '', results: [], failed: false })
+  const q = query.trim()
+  useEffect(() => {
+    if (!active || q.length < 2) return
+    const ctl = new AbortController()
+    const t = setTimeout(() => {
+      fetch(`/api/guests/?q=${encodeURIComponent(q)}`, { signal: ctl.signal })
+        .then((res) => (res.ok ? res.json() : Promise.reject(new Error())))
+        .then((data) => setState({ q, results: data.results, failed: false }))
+        .catch((e) => e.name !== 'AbortError' && setState({ q, results: [], failed: true }))
+    }, 200)
+    return () => {
+      clearTimeout(t)
+      ctl.abort()
+    }
+  }, [q, active])
+  const ready = q.length >= 2 && state.q === q
+  return { results: ready ? state.results : [], failed: ready && state.failed, done: ready }
 }
 
 const ORDER = ['find', 'attend', 'party', 'note', 'done']
@@ -91,7 +106,7 @@ function Flow() {
     setStep(s)
   }
 
-  const results = search(query)
+  const { results, failed, done } = useGuestSearch(query, step === 'find' && !pick)
   const seats = pick?.seats ?? 1
 
   function choose(g) {
@@ -116,6 +131,7 @@ function Flow() {
   }
 
   const reply = () => ({
+    guest: { id: pick.id, name: pick.name, seats: pick.seats, sponsor: pick.sponsor },
     name: pick.name,
     attending,
     fullName: pick.sponsor && attending === 'yes' ? fullName.trim() : '',
@@ -132,6 +148,7 @@ function Flow() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          guest: r.guest.id,
           name: r.fullName || r.name,
           attending: r.attending,
           guests: r.names.length,
@@ -154,8 +171,8 @@ function Flow() {
 
   function change() {
     const r = saved
-    const g = GUESTS.find((x) => x.name === r.name)
-    if (!g) {
+    const g = r.guest
+    if (!g?.id) {
       setPick(null)
       setQuery('')
       return go('find')
@@ -196,7 +213,7 @@ function Flow() {
   }
 
   if (step === 'find') {
-    const noMatch = query.trim().length >= 2 && results.length === 0
+    const noMatch = done && !failed && results.length === 0
     return (
       <div className="reply-card" ref={card} key={step} data-dir={dir}>
         <Steps n={1} />
@@ -220,7 +237,7 @@ function Flow() {
         {results.length > 0 && (
           <ul className="results">
             {results.map((g) => (
-              <li key={g.name}>
+              <li key={g.id}>
                 <button type="button" onClick={() => choose(g)}>
                   <span>{g.name}</span>
                   <span className="seats">{seatsText(g.seats)}</span>
@@ -229,6 +246,7 @@ function Flow() {
             ))}
           </ul>
         )}
+        {failed && <p className="form-error" role="alert">We couldn’t search the guest list just now. Please check your connection and try again.</p>}
         {noMatch && (
           <>
             <div className="notice">
@@ -324,7 +342,10 @@ function Flow() {
           </div>
         ))}
 
-        <p className="kids">Our wedding is an adults-only celebration. We kindly ask that you leave the little ones at home.</p>
+        <div className="kids">
+          <p className="kids-title">Children &amp; plus ones</p>
+          <p>Ours is an adults-only celebration, and we can only welcome the guests named on your invitation. Please don’t bring anyone who isn’t listed.</p>
+        </div>
         {err}
         <button type="button" className="btn" onClick={afterParty}>Continue</button>
       </div>

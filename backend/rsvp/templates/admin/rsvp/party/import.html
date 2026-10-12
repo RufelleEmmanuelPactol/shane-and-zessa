@@ -1,0 +1,15 @@
+{% extends "admin/base_site.html" %}
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Home</a> ›
+  <a href="{% url 'admin:rsvp_party_changelist' %}">Parties</a> › Import guest list
+</div>
+{% endblock %}
+{% block content %}
+<p>Each party in the file is added or updated, and its guest names replaced. Parties not in the file are left as they are, and replies are kept.</p>
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <input type="submit" value="Import">
+</form>
+{% endblock %}

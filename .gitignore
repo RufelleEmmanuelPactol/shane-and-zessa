@@ -17,3 +17,6 @@ backend/staticfiles/
 # scratch
 _draft/
 .DS_Store
+
+# the guest list (the repo is public; import it with manage.py import_guests)
+private/
