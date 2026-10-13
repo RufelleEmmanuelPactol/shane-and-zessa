@@ -187,7 +187,19 @@ export default function App() {
     if (opened) return
     const root = document.documentElement
     root.classList.add('is-sealed')
-    return () => root.classList.remove('is-sealed')
+    // iOS still scrolls past overflow: hidden, which would slide the cover
+    // away, so swipes and wheels do nothing until the button is tapped
+    const stop = (e) => e.preventDefault()
+    const pin = () => window.scrollY && window.scrollTo(0, 0)
+    document.addEventListener('touchmove', stop, { passive: false })
+    document.addEventListener('wheel', stop, { passive: false })
+    window.addEventListener('scroll', pin)
+    return () => {
+      root.classList.remove('is-sealed')
+      document.removeEventListener('touchmove', stop)
+      document.removeEventListener('wheel', stop)
+      window.removeEventListener('scroll', pin)
+    }
   }, [opened])
 
   function openInvitation() {

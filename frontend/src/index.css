@@ -161,6 +161,7 @@ html.is-sealed, html.is-sealed body { background: var(--cover-top); }
   max-width: 520px;
   margin: 0 auto;
   color: var(--cream);
+  touch-action: none;
 }
 /* the dark fade at the bottom carries on below the cover, under the toolbar */
 .cover::after {
