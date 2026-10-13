@@ -340,18 +340,19 @@ export default function App() {
         <section className="rsvp painted" id="rsvp">
           <img className="painting" src={asset('web/monet-meadow.webp')} width="1299" height="1732" loading="lazy" alt="" />
           <div className="rsvp-inner">
-            <div className="rsvp-head">
-              <p className="label">KINDLY RSVP</p>
-              <h2 className="title title-sm">Will you join us?</h2>
-              <p className="rsvp-lead">
-                Please confirm your attendance on or before <strong>{WEDDING.replyBy}</strong> so we can reserve your seat and finalize our guest list.
-              </p>
-              <div className="reply-by">
-                <span className="rsvp-rule-title">No RSVP, no seat reserved</span>
-                <p className="rsvp-note">We sincerely ask for your prompt response and understanding as we make the necessary arrangements for our celebration.</p>
+            <Rsvp head={
+              <div className="rsvp-head">
+                <p className="label">KINDLY RSVP</p>
+                <h2 className="title title-sm">Will you join us?</h2>
+                <p className="rsvp-lead">
+                  Please confirm your attendance on or before <strong>{WEDDING.replyBy}</strong> so we can reserve your seat and finalize our guest list.
+                </p>
+                <div className="reply-by">
+                  <span className="rsvp-rule-title">No RSVP, no seat reserved</span>
+                  <p className="rsvp-note">We sincerely ask for your prompt response and understanding as we make the necessary arrangements for our celebration.</p>
+                </div>
               </div>
-            </div>
-            <Rsvp />
+            } />
           </div>
         </section>
 

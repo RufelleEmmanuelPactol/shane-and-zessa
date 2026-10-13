@@ -71,7 +71,7 @@ function Skeleton() {
   )
 }
 
-function Flow() {
+function Flow({ onPage }) {
   const [saved, setSaved] = useState(load)
   const [page, setPage] = useState(saved ? 'done' : 'a')
   const [dir, setDir] = useState('none')
@@ -98,6 +98,8 @@ function Flow() {
     // only scroll when the card's top has gone off screen
     if (top < 0) card.current.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
   }, [page])
+
+  useEffect(() => onPage(page), [page, onPage])
 
   const go = (p) => {
     setError('')
@@ -374,7 +376,9 @@ function Flow() {
 }
 
 // Animates the card's height as steps change, so the page doesn't jump.
-export default function Rsvp() {
+// `head` (the "Will you join us?" card) is hidden once they've replied.
+export default function Rsvp({ head }) {
+  const [page, setPage] = useState(() => (load() ? 'done' : 'a'))
   const inner = useRef(null)
   const [height, setHeight] = useState()
   useEffect(() => {
@@ -385,8 +389,11 @@ export default function Rsvp() {
     return () => ro.disconnect()
   }, [])
   return (
-    <div className="reply-shell" style={{ height }}>
-      <div ref={inner}><Flow /></div>
-    </div>
+    <>
+      {page !== 'done' && head}
+      <div className="reply-shell" style={{ height }}>
+        <div ref={inner}><Flow onPage={setPage} /></div>
+      </div>
+    </>
   )
 }
