@@ -67,6 +67,18 @@ class SearchTests(TestCase):
         import_guests('party,side,seats,name\nB009,bride,1,Ben Cruz\n')
         self.assertEqual([r['name'] for r in self.search('ben')][0], 'Ben Cruz')
 
+    def test_shows_family_on_other_invitations(self):
+        import_guests(
+            'party,side,seats,name\n'
+            'M001,bride,1,Ahriz Monteclaro\n'
+            'M002,bride,2,Lorna Monteclaro\n'
+            'M002,bride,2,Rey Monteclaro\n'
+            'M003,groom,1,Ana Montero\n'
+        )
+        data = self.client.get('/api/guests/', {'q': 'ahr'}).json()
+        self.assertEqual([r['name'] for r in data['results']], ['Ahriz Monteclaro'])
+        self.assertEqual([r['name'] for r in data['family']], ['Lorna Monteclaro', 'Rey Monteclaro'])
+
 
 class RsvpTests(TestCase):
     def setUp(self):

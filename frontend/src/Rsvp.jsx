@@ -10,7 +10,7 @@ const SAVED = 'sz-rsvp'
 // The guest list lives in the backend (the repo is public); the page only
 // ever sees the names that match what the guest typed.
 function useGuestSearch(query, active) {
-  const [state, setState] = useState({ q: '', results: [], failed: false })
+  const [state, setState] = useState({ q: '', results: [], family: [], failed: false })
   const q = query.trim()
   useEffect(() => {
     if (!active || q.length < 2) return
@@ -18,8 +18,8 @@ function useGuestSearch(query, active) {
     const t = setTimeout(() => {
       fetch(`/api/guests/?q=${encodeURIComponent(q)}`, { signal: ctl.signal })
         .then((res) => (res.ok ? res.json() : Promise.reject(new Error())))
-        .then((data) => setState({ q, results: data.results, failed: false }))
-        .catch((e) => e.name !== 'AbortError' && setState({ q, results: [], failed: true }))
+        .then((data) => setState({ q, results: data.results, family: data.family ?? [], failed: false }))
+        .catch((e) => e.name !== 'AbortError' && setState({ q, results: [], family: [], failed: true }))
     }, 200)
     return () => {
       clearTimeout(t)
@@ -27,7 +27,7 @@ function useGuestSearch(query, active) {
     }
   }, [q, active])
   const ready = q.length >= 2 && state.q === q
-  return { results: ready ? state.results : [], failed: ready && state.failed, done: ready }
+  return { results: ready ? state.results : [], family: ready ? state.family : [], failed: ready && state.failed, done: ready }
 }
 
 // Two screens: find your name and say if you can come, then who's coming and a note.
@@ -56,6 +56,15 @@ function replyText(r, updated) {
   if (r.attending === 'yes') lines.push(`Coming (${r.names.length}): ${r.names.join(', ')}`)
   if (r.note) lines.push(`Note: ${r.note}`)
   return lines.join('\n')
+}
+
+// Family who share the surname but were sent their own invitation.
+function familyNote(family) {
+  const last = family.map((g) => g.name.trim().split(/\s+/).pop())
+  const one = last.every((n) => n.toLowerCase() === last[0].toLowerCase())
+  return one
+    ? `The rest of the ${last[0]} family have their own invitations, so each of them can reply for themselves.`
+    : 'Your family members have their own invitations, so each of them can reply for themselves.'
 }
 
 // Placeholder rows while the guest list answers.
@@ -108,7 +117,7 @@ function Flow({ onPage }) {
   }
 
   const typed = query.trim().length >= 2
-  const { results, failed, done } = useGuestSearch(query, page === 'a' && !pick)
+  const { results, family, failed, done } = useGuestSearch(query, page === 'a' && !pick)
   const searching = typed && !pick && !done
   const seats = pick?.seats ?? 1
   const yes = attending === 'yes'
@@ -252,6 +261,21 @@ function Flow({ onPage }) {
                 </li>
               ))}
             </ul>
+          )}
+          {!pick && family.length > 0 && (
+            <div className="family">
+              <p className="family-note">{familyNote(family)}</p>
+              <ul className="results">
+                {family.map((g) => (
+                  <li key={g.id}>
+                    <button type="button" onClick={() => choose(g)}>
+                      <span>{g.name}</span>
+                      <span className="seats">That’s me</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
           {failed && <p className="form-error" role="alert">We couldn’t search the guest list just now. Please check your connection and try again.</p>}
           {noMatch && (

@@ -12,10 +12,16 @@ from .models import Guest, Rsvp
 # Cap for replies that don't name a party (shouldn't happen from the page).
 MAX_GUESTS = 4
 MAX_RESULTS = 8
+MAX_FAMILY = 8
 
 
 def fold(s):
     return ''.join(c for c in unicodedata.normalize('NFD', s) if not unicodedata.combining(c)).lower().strip()
+
+
+def surname(name):
+    parts = fold(name).split()
+    return parts[-1] if len(parts) > 1 else ''
 
 
 def _guest_json(g):
@@ -29,13 +35,32 @@ def search_guests(request):
     q = fold(request.GET.get('q', ''))
     if len(q) < 2:
         return JsonResponse({'results': []})
+    guests = list(Guest.objects.filter(searchable=True).select_related('party'))
     matches = [
-        g for g in Guest.objects.filter(searchable=True).select_related('party')
+        g for g in guests
         if any(q in fold(n) for n in [g.name, *g.aka.split(',')] if n.strip())
     ]
     # names that start with what was typed come first
     matches.sort(key=lambda g: (not fold(g.name).startswith(q), g.name))
-    return JsonResponse({'results': [_guest_json(g) for g in matches[:MAX_RESULTS]]})
+    matches = matches[:MAX_RESULTS]
+
+    # Others who share a matched surname but are on a different invitation, so
+    # "Ahriz Monteclaro" also shows the other Monteclaros: each replies for
+    # their own invitation.
+    shown = {g.id for g in matches}
+    parties = {g.party_id for g in matches}
+    # only from names with a word starting with what was typed, so "ah" brings
+    # in Ahriz's family but not the family of everyone with "ah" mid-name
+    names = {surname(g.name) for g in matches if any(w.startswith(q) for w in fold(g.name).split())} - {''}
+    family = sorted(
+        (g for g in guests
+         if g.id not in shown and g.party_id not in parties and surname(g.name) in names),
+        key=lambda g: g.name,
+    )[:MAX_FAMILY]
+    return JsonResponse({
+        'results': [_guest_json(g) for g in matches],
+        'family': [_guest_json(g) for g in family],
+    })
 
 
 @csrf_exempt  # public form with no logins; the honeypot below handles bots

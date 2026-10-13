@@ -11,6 +11,8 @@
   --line: #c9bba6;
   --field: #fffdf8;
   --blush: #f3d9d2;
+  --cover-top: #2f3e2d;
+  --cover-foot: #1d1613;
 
   --serif: 'EB Garamond', Georgia, serif;
   --script: 'Pinyon Script', cursive;
@@ -143,14 +145,32 @@ html { -webkit-tap-highlight-color: transparent; }
    screen height; numbers below come from the 390×844 design */
 /* the cover is a full-screen layer over the page until "Open the invitation" */
 html.is-sealed, html.is-sealed body { overflow: hidden; overscroll-behavior: none; }
+/* Safari 26 fills the strip behind the clock with the page colour, so while
+   the cover is up the page takes the forest green from the top of the photo.
+   The cover is plain content (not fixed) so the photo runs on under the glass
+   toolbar at the bottom. */
+html.is-sealed, html.is-sealed body { background: var(--cover-top); }
 .cover {
-  position: fixed;
-  inset: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100vh;
+  height: 100lvh;
   z-index: 15;
   max-width: 520px;
   margin: 0 auto;
-  overflow: hidden;
   color: var(--cream);
+}
+/* the dark fade at the bottom carries on below the cover, under the toolbar */
+.cover::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 100vh;
+  background: var(--cover-foot);
 }
 .cover-letter { position: absolute; inset: 0; }
 .cover-card {
@@ -158,8 +178,20 @@ html.is-sealed, html.is-sealed body { overflow: hidden; overscroll-behavior: non
   inset: 0;
   z-index: 2;
   overflow: hidden;
-  background: #2b2a1e;
+  background: var(--cover-top);
   container-type: size;
+}
+/* the photo melts into the green strip behind the clock */
+.cover-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 140px;
+  z-index: 1;
+  background: linear-gradient(var(--cover-top), rgba(47, 62, 45, 0));
+  pointer-events: none;
 }
 .cover-stage {
   position: absolute;
@@ -246,6 +278,7 @@ main.is-sealed .invite-panel > .stitch { transform: none; }
   font-weight: 500;
   letter-spacing: 0.2em;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
+  z-index: 2;
 }
 
 
@@ -257,8 +290,10 @@ main.is-sealed .invite-panel > .stitch { transform: none; }
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 20px 20px max(32px, env(safe-area-inset-bottom));
-  background: var(--burgundy);
+  z-index: 2;
+  padding: 120px 20px max(32px, env(safe-area-inset-bottom));
+  /* see-through: the photo darkens toward the bottom so the button reads */
+  background: linear-gradient(rgba(29, 22, 19, 0), rgba(29, 22, 19, 0.55) 45%, var(--cover-foot));
 }
 .cover-bar img { width: 56px; height: 56px; flex: none; }
 .cover-open {
@@ -593,6 +628,8 @@ input[type='search']::-webkit-search-cancel-button { -webkit-appearance: none; }
 .search input { padding-left: 46px; }
 
 .results { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.family { display: flex; flex-direction: column; gap: 10px; padding-top: 6px; animation: rise 0.4s var(--ease-out) both; }
+.family-note { font-size: 17px; line-height: 1.4; color: var(--ink-soft); }
 .results button {
   width: 100%;
   min-height: 56px;
