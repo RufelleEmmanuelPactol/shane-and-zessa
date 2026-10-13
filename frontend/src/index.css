@@ -292,6 +292,9 @@ main.is-sealed .invite-panel > .stitch { transform: none; }
   gap: 14px;
   z-index: 2;
   padding: 120px 20px max(32px, env(safe-area-inset-bottom));
+  /* the cover runs under Safari's toolbar (100lvh), so lift the button above
+     it: 100lvh - 100svh is however tall the toolbar is in this layout */
+  padding-bottom: calc(100lvh - 100svh + 20px);
   /* see-through: the photo darkens toward the bottom so the button reads */
   background: linear-gradient(rgba(29, 22, 19, 0), rgba(29, 22, 19, 0.55) 45%, var(--cover-foot));
 }
