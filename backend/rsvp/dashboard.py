@@ -4,15 +4,10 @@ The export has the same first columns the importer reads, so it can be edited
 and uploaded again (the status columns are ignored on import).
 """
 import csv
-import functools
-import os
-import secrets
 
-from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import OuterRef, Subquery
-from django.http import Http404, HttpResponse
+from django.http import HttpResponse
 from django.shortcuts import render
-from django.urls import reverse
 from django.utils import timezone
 
 from .models import Guest, Party, Rsvp
@@ -57,24 +52,7 @@ def _totals(rows):
     }
 
 
-def staff_or_key(view):
-    """Staff sign in as before; anyone else needs the secret link /dashboard/<DASHBOARD_KEY>/."""
-    @functools.wraps(view)
-    def wrapper(request, key=None):
-        if key is None:
-            return staff_member_required(view)(request)
-        expected = os.environ.get('DASHBOARD_KEY', '')
-        if not expected or not secrets.compare_digest(key, expected):
-            raise Http404
-        response = view(request, key)
-        response['X-Robots-Tag'] = 'noindex, nofollow'
-        response['Referrer-Policy'] = 'no-referrer'
-        return response
-    return wrapper
-
-
-@staff_or_key
-def dashboard(request, key=None):
+def dashboard(request):
     rows = list(invitations())
     for g in rows:
         g.status_label = STATUS_LABELS[g.status]
@@ -84,12 +62,10 @@ def dashboard(request, key=None):
         'total': _totals(rows),
         'bride': sides['bride'],
         'groom': sides['groom'],
-        'export_url': reverse('guest_export_key', args=[key]) if key else reverse('guest_export'),
     })
 
 
-@staff_or_key
-def export_csv(request, key=None):
+def export_csv(request):
     response = HttpResponse(content_type='text/csv; charset=utf-8')
     response['Content-Disposition'] = f'attachment; filename="guest-list-{timezone.localdate():%Y-%m-%d}.csv"'
     response.write('﻿')  # so Excel reads the names' accents correctly

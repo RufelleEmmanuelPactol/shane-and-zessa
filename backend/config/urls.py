@@ -12,8 +12,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('dashboard/', dashboard, name='guest_dashboard'),
     path('dashboard/guest-list.csv', export_csv, name='guest_export'),
-    path('dashboard/<str:key>/', dashboard, name='guest_dashboard_key'),
-    path('dashboard/<str:key>/guest-list.csv', export_csv, name='guest_export_key'),
     path('api/guests/', search_guests),
     path('api/rsvp/', create_rsvp),
     path('media/<path:key>', media),

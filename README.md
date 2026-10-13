@@ -44,7 +44,7 @@ It's loaded from a CSV with columns `party, side, seats, name, role, searchable`
 - On Railway: Admin → Parties → **Import guest list**, and upload the CSV
 - To try the reply flow, load the test list: `.venv/bin/python manage.py import_guests rsvp/fixtures/test_guests.csv`, then type "test". It covers one seat (Ana), two (Ben), a family of four (Cora), a principal sponsor (Dante), a hidden plus-one (Ella) and an accent (José). Their parties are `TEST01`–`TEST06`; delete them in Admin → Parties before sending invitations.
 
-The couple's dashboard is at `/dashboard/` (sign in with an admin account). It shows every invitation with its reply, totals for each side, search and filters, and an **Export CSV** button. The export uses the same columns the import reads, plus `status`, `coming`, `replied_at` and `reply`, so it can be edited and uploaded again; the import ignores the status columns.
+The couple's dashboard is at `/dashboard/` and is open to anyone with the link. It shows every invitation with its reply, totals for each side, search and filters, and an **Export CSV** button. The export uses the same columns the import reads, plus `status`, `coming`, `replied_at` and `reply`, so it can be edited and uploaded again; the import ignores the status columns.
 
 Re-importing updates each party in the file and replaces its names. Parties not in the file are left alone, and replies are never deleted. Small fixes (a spelling, a nickname in `aka`) are easiest in Admin → Parties.
 
