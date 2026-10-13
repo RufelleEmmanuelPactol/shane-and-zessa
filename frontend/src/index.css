@@ -364,7 +364,7 @@ html.is-sealed, html.is-sealed body { overflow: hidden; overscroll-behavior: non
 .ornament::after { content: ''; position: absolute; left: 50%; top: -3px; width: 7px; height: 7px; margin-left: -3.5px; background: var(--page); border: 1px solid var(--rose); transform: rotate(45deg); }
 .attire-title { font-size: 30px; font-weight: 500; letter-spacing: 0.24em; padding-left: 0.24em; line-height: 1.2; }
 
-.collage { position: relative; height: 480px; margin: 32px -24px 0; }
+.collage { position: relative; z-index: 1; height: 480px; margin: 32px -24px 0; }
 .collage-base { position: absolute; left: 0; right: 0; top: 70px; bottom: 0; overflow: hidden; }
 .collage-base img { width: 100%; height: 100%; object-fit: cover; object-position: 40% 60%; }
 /* scalloped lace edge along the top of the painting */
@@ -425,15 +425,16 @@ html.is-sealed, html.is-sealed body { overflow: hidden; overscroll-behavior: non
 }
 .collage-lace svg { display: block; width: 100%; height: 28px; }
 
-.attire-garden { position: relative; overflow: hidden; isolation: isolate; margin: 8px -24px 0; padding: 20px 24px 40px; }
+/* the garden starts tucked up under the lace band */
+.attire-garden { position: relative; overflow: hidden; isolation: isolate; margin: -60px -24px 0; padding: 70px 24px 40px; }
 .attire-painting { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; object-position: 50% 35%; }
-/* cream at the top and bottom, the painting showing through in between */
+/* a soft veil at the top, cream again at the bottom */
 .attire-garden::before {
   content: '';
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(var(--page) 0, rgba(241, 230, 214, 0.55) 70px, rgba(241, 230, 214, 0) 260px, rgba(241, 230, 214, 0.2) calc(100% - 200px), var(--page) 100%);
+  background: linear-gradient(var(--page) 60px, rgba(241, 230, 214, 0.45) 110px, rgba(241, 230, 214, 0) 190px, rgba(241, 230, 214, 0.2) calc(100% - 200px), var(--page) 100%);
 }
 .attire-garden .title { margin-bottom: 22px; text-align: center; }
 .attire-cards { display: flex; flex-direction: column; gap: 18px; }
