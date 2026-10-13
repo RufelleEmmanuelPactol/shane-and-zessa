@@ -4,7 +4,7 @@ Phone-only wedding invitation and RSVP page for Shane & Zessa. React (Vite) for 
 
 ## Deploy (Railway)
 
-Deploy with `Dockerfile.django` (set the `RAILWAY_DOCKERFILE_PATH` variable), add `DJANGO_SECRET_KEY` and the S3 settings, and attach a volume so replies survive redeploys. The root `Dockerfile` is the old static-only build: it has no `/media` or `/api`, so images, music and replies won't work there.
+Deploy with `Dockerfile.django` (set the `RAILWAY_DOCKERFILE_PATH` variable), add `DJANGO_SECRET_KEY` and the S3 settings, and set `DATABASE_URL=${{Postgres.DATABASE_URL}}` so guests and replies live in the project's Postgres database (without it Django falls back to a SQLite file inside the container, which every deploy wipes). The root `Dockerfile` is the old static-only build: it has no `/media` or `/api`, so images, music and replies won't work there.
 
 Photos, paintings and music live in a private S3 bucket under `shaneandzessa/` and are only served by the Django build: `/media/<key>` redirects to a signed link for `shaneandzessa/<key>` (e.g. `/media/audio/air-on-the-g-string.mp3`). Set `AWS_S3_ENDPOINT_URL`, `AWS_STORAGE_BUCKET_NAME`, `AWS_S3_REGION_NAME`, `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` on Railway (and `ASSET_PREFIX` to use a different folder). Without them `/media/` returns 404.
 
