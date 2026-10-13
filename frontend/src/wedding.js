@@ -15,7 +15,7 @@ export const WEDDING = {
   // into `map` to drop guests on an exact pin; otherwise Maps searches for name + address.
   ceremony: {
     label: 'CHURCH CEREMONY · 2:00 PM',
-    name: 'Pioneer SDA Church',
+    name: 'Sindangan Seventh-day Adventist Pioneer Church',
     address: 'Sta. Cruz, Sindangan, Zamboanga del Norte',
     map: 'https://www.google.com/maps/place/Seventh-Day+Adventist+Church+-+Sindangan/@8.2353024,122.9952136,17.23z/data=!4m10!1m2!2m1!1ssindangan+sda!3m6!1s0x325386a2d97d06d3:0xc99e1465870c28ad!8m2!3d8.2362179!4d122.9973609!15sCg1zaW5kYW5nYW4gc2RhkgEcc2V2ZW50aF9kYXlfYWR2ZW50aXN0X2NodXJjaOABAA!16s%2Fg%2F1tg9q6nq',
   },
