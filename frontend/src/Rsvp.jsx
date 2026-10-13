@@ -168,7 +168,7 @@ function Flow({ onPage }) {
           attending: r.attending,
           guests: r.names.length,
           // guest names, sponsor's full name and the note ride in the message
-          message: replyText(r, !!saved),
+          message: replyText(r, saved?.guest?.id === r.guest.id),
         }),
       })
       if (!res.ok) throw new Error()
@@ -201,6 +201,16 @@ function Flow({ onPage }) {
     go('a')
   }
 
+  // someone else on the same phone (a partner, a parent) replying for their own invitation
+  function another() {
+    notYou()
+    setCount(1)
+    setNames([])
+    setFullName('')
+    setNote('')
+    go('a')
+  }
+
   const err = error && <p className="form-error" role="alert">{error}</p>
 
   if (page === 'done' && saved) {
@@ -222,6 +232,7 @@ function Flow({ onPage }) {
           </button>
         )}
         <button type="button" className="link" onClick={change}>Change my reply</button>
+        <button type="button" className="link" onClick={another}>Reply for someone else</button>
       </div>
     )
   }
