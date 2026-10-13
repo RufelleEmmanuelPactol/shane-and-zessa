@@ -10,6 +10,9 @@ import guestsImg from './assets/attire-guests.webp'
 import { asset, mapUrl, MUSIC_URL, WEDDING } from './wedding.js'
 
 
+// how long the cover takes to drift away; keep in step with .cover.is-leaving in index.css
+const OPEN_MS = 1400
+
 const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
@@ -36,7 +39,7 @@ function useReveal(ready) {
   }, [ready])
 }
 
-function Cover({ onOpen }) {
+function Cover({ onOpen, leaving }) {
   // play the entrance once the photo is ready, so it never animates over a blank
   const photo = useRef(null)
   const [ready, setReady] = useState(false)
@@ -45,7 +48,7 @@ function Cover({ onOpen }) {
   }, [])
 
   return (
-    <header className={`cover${ready ? ' is-in' : ''}`}>
+    <header className={`cover${ready ? ' is-in' : ''}${leaving ? ' is-leaving' : ''}`} inert={leaving || undefined}>
       <div className="cover-letter">
         <div className="cover-card">
           {/* The photo, the script and the cut-out couple share one stage, so the
@@ -174,7 +177,9 @@ const WORDS = [
 
 export default function App() {
   const gate = useGate()
-  const [opened, setOpened] = useState(false)
+  // sealed → opening (the cover drifts away over the invitation) → open
+  const [phase, setPhase] = useState('sealed')
+  const opened = phase === 'open'
   useReveal(!gate)
 
   // The cover fills the screen and the page stays put until "Open the invitation".
@@ -186,8 +191,11 @@ export default function App() {
   }, [opened])
 
   function openInvitation() {
+    if (phase !== 'sealed') return
     window.scrollTo(0, 0)
-    setOpened(true)
+    setPhase('opening')
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches
+    setTimeout(() => setPhase('open'), still ? 0 : OPEN_MS)
   }
 
   if (gate) return <Gate kind={gate} />
@@ -195,9 +203,9 @@ export default function App() {
   return (
     <>
       {MUSIC_URL && <Music src={MUSIC_URL} />}
-      {!opened && <Cover onOpen={openInvitation} />}
+      {!opened && <Cover onOpen={openInvitation} leaving={phase === 'opening'} />}
 
-      <main>
+      <main className={phase === 'sealed' ? 'is-sealed' : undefined}>
         <section className="invite" id="invitation">
           <div className="invite-photo">
             <img src={asset('web/picnic.webp')} width="2400" height="1600" loading="lazy"
