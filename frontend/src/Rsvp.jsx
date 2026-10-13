@@ -335,7 +335,8 @@ function Flow() {
                   <button type="button" aria-label="One more" disabled={count >= seats} onClick={() => setCount(count + 1)}>+</button>
                 </div>
               </div>
-              <p className="hint">You have {seats} seats. We can’t add more.</p>
+              {/* only mention the limit once they reach it */}
+              {count >= seats && <p className="hint">That’s all {seats} of your seats. We can’t add more.</p>}
             </>
           )}
           <p className="fixed">{pick.name}</p>
