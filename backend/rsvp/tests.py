@@ -1,6 +1,8 @@
 import csv
 import io
 import json
+import os
+from unittest import mock
 
 from django.contrib.auth.models import User
 from django.test import TestCase
@@ -101,6 +103,16 @@ class DashboardTests(TestCase):
     def test_needs_login(self):
         self.assertEqual(self.client.get('/dashboard/').status_code, 302)
         self.assertEqual(self.client.get('/dashboard/guest-list.csv').status_code, 302)
+
+    def test_secret_link(self):
+        with mock.patch.dict(os.environ, {'DASHBOARD_KEY': 'k3y'}):
+            self.assertEqual(self.client.get('/dashboard/wrong/').status_code, 404)
+            page = self.client.get('/dashboard/k3y/')
+            self.assertEqual(page.status_code, 200)
+            self.assertEqual(page.context['export_url'], '/dashboard/k3y/guest-list.csv')
+            self.assertEqual(self.client.get('/dashboard/k3y/guest-list.csv').status_code, 200)
+        with mock.patch.dict(os.environ, {'DASHBOARD_KEY': ''}):
+            self.assertEqual(self.client.get('/dashboard/k3y/').status_code, 404)
 
     def test_totals_use_latest_reply_once_per_party(self):
         self.client.force_login(self.admin)

@@ -168,7 +168,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
           <input type="search" id="q" placeholder="Search a name" aria-label="Search a name" autocomplete="off">
         </label>
-        <a class="export" href="{% url 'guest_export' %}" download>
+        <a class="export" href="{{ export_url }}" download>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 19h14"/></svg>
           <span>Export CSV</span>
         </a>
