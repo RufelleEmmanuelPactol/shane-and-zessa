@@ -42,6 +42,7 @@ It's loaded from a CSV with columns `party, side, seats, name, role, searchable`
 
 - Locally: `.venv/bin/python manage.py import_guests ../private/guests.csv`
 - On Railway: Admin → Parties → **Import guest list**, and upload the CSV
+- To try the reply flow, load the test list: `.venv/bin/python manage.py import_guests rsvp/fixtures/test_guests.csv`, then type "test". It covers one seat (Ana), two (Ben), a family of four (Cora), a principal sponsor (Dante), a hidden plus-one (Ella) and an accent (José). Their parties are `TEST01`–`TEST06`; delete them in Admin → Parties before sending invitations.
 
 The couple's dashboard is at `/dashboard/` (sign in with an admin account). It shows every invitation with its reply, totals for each side, search and filters, and an **Export CSV** button. The export uses the same columns the import reads, plus `status`, `coming`, `replied_at` and `reply`, so it can be edited and uploaded again; the import ignores the status columns.
 
@@ -53,4 +54,4 @@ The reply flow posts to `POST /api/rsvp/` with the guest's id, so each reply is 
 
 ## Images and music
 
-All photos, paintings, cut-outs and the music live in a private S3 bucket and are served by Django at `/media/<key>`, which redirects to a short-lived signed link. Front-end code uses `asset('<key>')` from `frontend/src/wedding.js`; never put S3 URLs or credentials in it. The cover cut-out (`generated/cover-cutout.png`) is pixel-aligned to `photos/cover-guitar.jpg` so "Our wedding day" sits between them. The paintings are public-domain works by Corot, Monet and Fantin-Latour.
+All photos, paintings, cut-outs and the music live in a private S3 bucket and are served by Django at `/media/<key>`, which redirects to a short-lived signed link. Front-end code uses `asset('<key>')` from `frontend/src/wedding.js`; never put S3 URLs or credentials in it. The cover cut-out (`generated/cover-cutout.png`) is pixel-aligned to `photos/cover-guitar.jpg` so "Our wedding day" sits between them. The paintings are public-domain works by Corot, Monet, Fantin-Latour and Hassam. The three small dress code drawings are bundled with the page instead (`frontend/src/assets/`).

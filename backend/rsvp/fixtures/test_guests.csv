@@ -1,0 +1,8 @@
+party,side,seats,name,role,searchable
+TEST01,bride,1,Ana Test,,yes
+TEST02,bride,2,Ben Test,,yes
+TEST03,groom,4,Cora Test,,yes
+TEST04,groom,2,Dante Test,Principal Sponsor,yes
+TEST05,bride,2,Ella Test,,yes
+TEST05,bride,2,Ella Test Plus One,,no
+TEST06,groom,1,José Test,,yes

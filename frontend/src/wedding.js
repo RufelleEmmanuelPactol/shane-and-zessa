@@ -6,31 +6,36 @@ export const asset = (key) => `/media/${key}`
 export const WEDDING = {
   // from seating to the send-off; the calendar invite and countdown use these
   start: '2026-11-29T13:30:00+08:00',
-  end: '2026-11-29T21:00:00+08:00',
+  end: '2026-11-29T21:30:00+08:00',
   dateShort: '29 · 11 · 26',
   dateLine: 'Sunday, at two in the afternoon',
   place: 'Sindangan, Zamboanga del Norte',
-  // EDIT: the venues. The "See ceremony" / "See reception" buttons open these in Google Maps,
+  // EDIT: the venues. The "Get directions" buttons open these in Google Maps,
   // and the calendar invite carries the ceremony's address. Paste a Google Maps share link
   // into `map` to drop guests on an exact pin; otherwise Maps searches for name + address.
-  ceremony: { name: 'Ceremony venue', address: 'Sindangan, Zamboanga del Norte', map: '' },
-  reception: { name: 'Reception venue', address: 'Sindangan, Zamboanga del Norte', map: '' },
-  replyBy: 'Sunday, November 1, 2026',
+  ceremony: {
+    label: 'CHURCH CEREMONY · 2:00 PM',
+    name: 'Pioneer SDA Church',
+    address: 'Sta. Cruz, Sindangan, Zamboanga del Norte',
+    map: 'https://www.google.com/maps/place/Seventh-Day+Adventist+Church+-+Sindangan/@8.2353024,122.9952136,17.23z/data=!4m10!1m2!2m1!1ssindangan+sda!3m6!1s0x325386a2d97d06d3:0xc99e1465870c28ad!8m2!3d8.2362179!4d122.9973609!15sCg1zaW5kYW5nYW4gc2RhkgEcc2V2ZW50aF9kYXlfYWR2ZW50aXN0X2NodXJjaOABAA!16s%2Fg%2F1tg9q6nq',
+  },
+  reception: { label: 'RECEPTION · 5:30 PM', name: 'Royal Garden', address: 'Sindangan, Zamboanga del Norte', map: '' },
+  replyBy: 'November 15, 2026',
+  // `icon` is a key of DAY_ICONS in icons.jsx; `main` marks the highlighted moment
   day: [
-    { time: '1:30 pm', title: 'Seating begins' },
-    { time: '2:00 pm', title: 'Ceremony' },
-    { time: '4:00 pm', title: 'Drinks, reception & pikapika' },
-    { time: '5:30 pm', title: 'Dinner' },
-    { time: '8:30 pm', title: 'Send-off' },
+    { time: '1:30 PM', title: 'Guest arrival & registration', icon: 'guestbook' },
+    { time: '2:00 PM', title: 'Church ceremony', icon: 'rose', main: true },
+    { time: '4:00 PM', title: 'Photo session', icon: 'camera' },
+    { time: '5:30 PM', title: 'Reception & guest arrival (pika-pika)', icon: 'glasses' },
+    { time: '6:30 PM', title: 'Grand entrance of the newlyweds', icon: 'hearts' },
+    { time: '7:00 PM', title: 'Dinner', icon: 'plate' },
+    { time: '9:30 PM', title: 'Send-off', icon: 'car' },
   ],
-  attire: 'Garden formal',
   palette: [
     { name: 'Burgundy', hex: '#621828' },
-    { name: 'Maroon', hex: '#8b1e35' },
-    { name: 'Chocolate', hex: '#4e2e24' },
-    { name: 'Rose gold', hex: '#c48a78' },
+    { name: 'Wine', hex: '#8b1e35' },
     { name: 'Champagne', hex: '#e8d3b4' },
-    { name: 'Cream', hex: '#f6eee3' },
+    { name: 'Ivory', hex: '#f6eee3' },
   ],
 }
 

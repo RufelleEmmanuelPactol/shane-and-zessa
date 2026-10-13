@@ -3,7 +3,10 @@ import Gate, { useGate } from './Gate.jsx'
 import Music from './Music.jsx'
 import Rsvp from './Rsvp.jsx'
 import { addToCalendar } from './ics.js'
-import { ArrowRight, CalendarIcon, PinIcon } from './icons.jsx'
+import { ArrowRight, CalendarIcon, DAY_ICONS, PinIcon } from './icons.jsx'
+import barongImg from './assets/attire-barong.webp'
+import filipinianaImg from './assets/attire-filipiniana.webp'
+import guestsImg from './assets/attire-guests.webp'
 import { asset, mapUrl, MUSIC_URL, WEDDING } from './wedding.js'
 
 
@@ -33,102 +36,17 @@ function useReveal(ready) {
   }, [ready])
 }
 
-// The burgundy envelope the cover folds into: laid paper, a Morris "Honeysuckle"
-// (1876) liner on the inside of the flap, gold rules and fold shading. Drawn in
-// one 100-wide unit box per piece and stretched to the screen.
-const FLAP = 'M0 0H100C100 7 72 34 57 69Q50 82 43 69C28 34 0 7 0 0Z'
-
-function EnvelopeFront() {
-  return (
-    <>
-      <svg className="env-defs" aria-hidden="true">
-        <defs>
-          <pattern id="env-paper" patternUnits="userSpaceOnUse" width="100" height="100">
-            <image href={asset('web/paper-burgundy.webp')} width="100" height="100" preserveAspectRatio="none" />
-          </pattern>
-          <pattern id="env-liner" patternUnits="userSpaceOnUse" width="56" height="37">
-            <image href={asset('web/liner-honeysuckle.webp')} width="56" height="37" preserveAspectRatio="none" />
-          </pattern>
-          <linearGradient id="env-shade-back" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#000" stopOpacity="0.35" />
-            <stop offset="0.5" stopColor="#000" stopOpacity="0.15" />
-            <stop offset="1" stopColor="#000" stopOpacity="0.3" />
-          </linearGradient>
-          <linearGradient id="env-shade-side" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stopColor="#fff" stopOpacity="0.07" />
-            <stop offset="0.5" stopColor="#000" stopOpacity="0.12" />
-            <stop offset="1" stopColor="#000" stopOpacity="0.28" />
-          </linearGradient>
-          <linearGradient id="env-shade-bottom" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#fff" stopOpacity="0.1" />
-            <stop offset="1" stopColor="#000" stopOpacity="0.2" />
-          </linearGradient>
-          <linearGradient id="env-shade-flap" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#000" stopOpacity="0.25" />
-            <stop offset="0.6" stopColor="#fff" stopOpacity="0.04" />
-            <stop offset="1" stopColor="#fff" stopOpacity="0.1" />
-          </linearGradient>
-        </defs>
-      </svg>
-
-      <svg className="env-pocket" viewBox="0 0 100 131" preserveAspectRatio="none" aria-hidden="true">
-        {/* side flaps meet in the middle; the bottom flap folds up over them */}
-        <path d="M0 0L50 73L100 0V131H0Z" fill="url(#env-paper)" />
-        <path d="M0 0L50 73L0 131Z" fill="url(#env-shade-side)" />
-        <path d="M100 0L50 73L100 131Z" fill="url(#env-shade-side)" transform="matrix(-1 0 0 1 100 0)" />
-        <path d="M0 131L44 86Q50 80 56 86L100 131Z" fill="url(#env-paper)" />
-        <path d="M0 131L44 86Q50 80 56 86L100 131Z" fill="url(#env-shade-bottom)" />
-        <path d="M0 131L44 86Q50 80 56 86L100 131" fill="none" stroke="#2a0810" strokeOpacity="0.45" strokeWidth="0.6" vectorEffect="non-scaling-stroke" />
-        <path d="M1.5 0L50 71L98.5 0" fill="none" stroke="#c9a35a" strokeOpacity="0.85" strokeWidth="1" vectorEffect="non-scaling-stroke" />
-      </svg>
-
-      <div className="env-flap" aria-hidden="true">
-        <div className="env-face env-flap-out"><svg viewBox="0 0 100 83" preserveAspectRatio="none">
-          <path d={FLAP} fill="url(#env-paper)" />
-          <path d={FLAP} fill="url(#env-shade-flap)" />
-          <path d={FLAP} fill="none" stroke="#c9a35a" strokeWidth="1.2" vectorEffect="non-scaling-stroke" transform="translate(50 2) scale(0.9) translate(-50 0)" />
-          <path d={FLAP} fill="none" stroke="#c9a35a" strokeOpacity="0.6" strokeWidth="0.6" vectorEffect="non-scaling-stroke" transform="translate(50 3.5) scale(0.86) translate(-50 0)" />
-        </svg></div>
-        <div className="env-face env-flap-in"><svg viewBox="0 0 100 83" preserveAspectRatio="none">
-          <path d={FLAP} fill="url(#env-paper)" />
-          <path d={FLAP} fill="url(#env-liner)" transform="translate(50 3) scale(0.92) translate(-50 0)" />
-          <path d={FLAP} fill="none" stroke="#c9a35a" strokeWidth="1" vectorEffect="non-scaling-stroke" transform="translate(50 3) scale(0.92) translate(-50 0)" />
-        </svg></div>
-      </div>
-    </>
-  )
-}
-
-// How long the cover takes to fold into its envelope and fly off; matches the
-// .cover.is-leaving timeline in index.css.
-const COVER_EXIT_MS = 3450
-
 function Cover({ onOpen }) {
   // play the entrance once the photo is ready, so it never animates over a blank
   const photo = useRef(null)
   const [ready, setReady] = useState(false)
-  const [leaving, setLeaving] = useState(false)
   useEffect(() => {
     if (photo.current?.complete) setReady(true)
   }, [])
 
-  function open() {
-    if (leaving) return
-    setLeaving(true)
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    setTimeout(onOpen, reduced ? 0 : COVER_EXIT_MS)
-  }
-
   return (
-    <header className={`cover${ready ? ' is-in' : ''}${leaving ? ' is-leaving' : ''}`}>
-      {/* On "Open the invitation" the card shrinks, a burgundy envelope closes
-          around it, the crest seals it, and the whole letter flies off. */}
+    <header className={`cover${ready ? ' is-in' : ''}`}>
       <div className="cover-letter">
-        <svg className="env-back" viewBox="0 0 100 131" preserveAspectRatio="none" aria-hidden="true">
-          <rect width="100" height="131" fill="url(#env-paper)" />
-          <rect width="100" height="131" fill="url(#env-shade-back)" />
-        </svg>
-
         <div className="cover-card">
           {/* The photo, the script and the cut-out couple share one stage, so the
               words sit behind the couple at the same spot on every screen size. */}
@@ -147,12 +65,9 @@ function Cover({ onOpen }) {
 
           <div className="cover-bar">
             <img src={asset('photos/crest.webp')} width="320" height="320" alt="" />
-            <button type="button" className="cover-open" onClick={open}>Open the invitation <ArrowRight /></button>
+            <button type="button" className="cover-open" onClick={onOpen}>Open the invitation <ArrowRight /></button>
           </div>
         </div>
-
-        <EnvelopeFront />
-        <img className="env-seal" src={asset('photos/crest.webp')} width="320" height="320" alt="" />
       </div>
     </header>
   )
@@ -291,15 +206,19 @@ export default function App() {
           <div className="invite-panel">
             <Stitch />
             <span className="rule" />
-            <p className="label">AN INVITATION</p>
-            <p className="lead">We would love for you to be there as we say our vows, share a long dinner by candlelight, and dance a little after.</p>
+            <p className="invite-blessing">Together with God’s blessing,<br />the wedding of</p>
+            <p className="invite-names names">Shane <span>&amp;</span> Zessa</p>
+            <p className="lead">We joyfully invite you to celebrate our special day with us.</p>
           </div>
         </section>
 
         <section className="when painted">
           <img className="painting" src={asset('web/corot-lake-nemi.webp')} width="1403" height="1871" loading="lazy" alt="" />
           <div className="when-inner">
-            <h2 className="title on-dark reveal">Save the date</h2>
+            <div className="reveal">
+              <h2 className="title on-dark">Save the date</h2>
+              <p className="when-date">Sunday, November 29, 2026</p>
+            </div>
             <div className="reveal"><Calendar iso={WEDDING.start} /></div>
             <button type="button" className="btn btn-cream reveal" onClick={addToCalendar}>
               <CalendarIcon /> Add to my calendar
@@ -309,35 +228,46 @@ export default function App() {
 
         <section className="day painted">
           <img className="painting" src={asset('web/corot-souvenir-mortefontaine.webp')} width="1475" height="1735" loading="lazy" alt="" />
-          <div className="day-inner">
-            <span className="rule" />
-            <p className="label">ORDER OF THE DAY</p>
-            <h2 className="title reveal">The day</h2>
-            <ol className="timeline">
-              {WEDDING.day.map(({ time, title, where }, i) => (
-                <li key={title} className="reveal" style={{ '--d': `${i * 80}ms` }}>
+          <span className="rule" />
+          <p className="label">WEDDING DAY TIMELINE</p>
+          <h2 className="title reveal">The day</h2>
+          <ol className="timeline">
+            {WEDDING.day.map(({ time, title, icon, main }, i) => (
+              <li key={title} className={main ? 'reveal is-main' : 'reveal'} style={{ '--d': `${i * 80}ms` }}>
+                <span className="tl-icon">{DAY_ICONS[icon]}</span>
+                <span className="tl-text">
                   <span className="tl-time">{time}</span>
+                  <span className="tl-title">{title}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
+          <p className="timeline-close reveal">We look forward to celebrating with you!</p>
+
+          <div className="venues">
+            <p className="label">WHERE TO FIND US</p>
+            {[[WEDDING.ceremony, 'chapel', ''], [WEDDING.reception, 'sprig', ' venue-dark']].map(([venue, icon, tone]) => (
+              <div key={venue.name} className={`venue reveal${tone}`}>
+                <div className="venue-head">
+                  <span className="venue-icon">{DAY_ICONS[icon]}</span>
                   <span>
-                    <span className="tl-title">{title}</span>
-                    {where && <span className="tl-where">{where}</span>}
+                    <span className="venue-label">{venue.label}</span>
+                    <span className="venue-name">{venue.name}</span>
                   </span>
-                </li>
-              ))}
-            </ol>
-            <div className="venues">
-              {[['ceremony', WEDDING.ceremony], ['reception', WEDDING.reception]].map(([label, venue]) => (
-                <a key={label} className="btn btn-cream reveal" href={mapUrl(venue)} target="_blank" rel="noopener">
-                  <PinIcon /> See {label}
+                </div>
+                <a className="btn venue-go" href={mapUrl(venue)} target="_blank" rel="noopener">
+                  <PinIcon /> Get directions
                 </a>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </section>
 
         <section className="attire">
-          <p className="label">DRESS CODE</p>
-          <h2 className="title reveal">What to wear</h2>
-          <p className="lead">{WEDDING.attire}</p>
+          <div className="attire-head">
+            <span className="ornament" aria-hidden="true" />
+            <h2 className="attire-title">DRESS CODE</h2>
+          </div>
 
           <div className="collage reveal" aria-hidden="true">
             <div className="collage-base">
@@ -353,14 +283,50 @@ export default function App() {
               <img src={asset('web/monet-bordighera.webp')} width="600" height="483" loading="lazy" alt="" />
             </div>
             <img className="collage-couple" src={asset('web/day-what-to-wear-fixed.webp')} width="806" height="1500" loading="lazy" alt="" />
+            {/* a lace band hides the couple's feet */}
+            <div className="collage-lace">
+              <svg viewBox="0 0 390 28" preserveAspectRatio="xMidYMid meet">
+                <path d="M24 14H166M224 14H366" stroke="#c9a96e" strokeWidth="1.4" strokeLinecap="round" fill="none" />
+                <g fill="#c9a96e"><rect x="17" y="13" width="6" height="6" transform="rotate(45 20 16)" /><rect x="367" y="13" width="6" height="6" transform="rotate(45 370 16)" /></g>
+                <g transform="translate(195 15)">
+                  <ellipse cx="-17" cy="2" rx="10" ry="4" fill="#5f6b4e" transform="rotate(-18 -17 2)" />
+                  <ellipse cx="17" cy="2" rx="10" ry="4" fill="#5f6b4e" transform="rotate(18 17 2)" />
+                  <g fill="#c48a78">{[0, 72, 144, 216, 288].map((r) => <circle key={r} cx="0" cy="-7" r="5.5" transform={`rotate(${r})`} />)}</g>
+                  <circle r="4" fill="#8b1e35" />
+                  <circle r="1.4" fill="#e8d3b4" />
+                </g>
+              </svg>
+            </div>
           </div>
 
-          <p className="label muted">OUR COLOURS</p>
-          <ul className="swatches">
-            {WEDDING.palette.map((c) => (
-              <li key={c.name}><span style={{ background: c.hex }} />{c.name}</li>
-            ))}
-          </ul>
+          <div className="attire-garden">
+            <img className="attire-painting" src={asset('web/hassam-garden.webp')} width="1546" height="1800" loading="lazy" alt="" />
+            <h3 className="title reveal">What to wear</h3>
+            <div className="attire-cards">
+              <div className="attire-card reveal">
+                <p className="attire-who">For our principal sponsors</p>
+                <div className="attire-pair">
+                  <img src={barongImg} width="800" height="800" loading="lazy" alt="Drawing of a Barong Tagalog with embroidered front panels" />
+                  <img src={filipinianaImg} width="800" height="800" loading="lazy" alt="Drawing of a Filipiniana gown with butterfly sleeves" />
+                </div>
+                <p className="attire-what">Formal wear</p>
+                <p className="attire-detail">Barong Tagalog<span className="diamond" aria-hidden="true" />Filipiniana</p>
+              </div>
+
+              <div className="attire-card reveal">
+                <p className="attire-who">For our guests</p>
+                <img className="attire-single" src={guestsImg} width="800" height="800" loading="lazy" alt="Drawing of a semi-formal midi dress beside a suit" />
+                <p className="attire-what">Semi-formal attire</p>
+                <p className="attire-detail">in burgundy &amp; champagne</p>
+                <ul className="swatches" aria-label="Our colour palette">
+                  {WEDDING.palette.map((c) => (
+                    <li key={c.name}><span style={{ background: c.hex }} />{c.name}</li>
+                  ))}
+                </ul>
+                <p className="attire-note">We kindly encourage everyone to dress within our chosen color palette to complement the look and feel of our celebration.</p>
+              </div>
+            </div>
+          </div>
         </section>
 
         <section className="words" aria-label="Just us, golden hour, long dinners, happy tears, your favorite song, candlelight, forever starts here">
@@ -375,20 +341,33 @@ export default function App() {
           <img className="painting" src={asset('web/monet-meadow.webp')} width="1299" height="1732" loading="lazy" alt="" />
           <div className="rsvp-inner">
             <div className="rsvp-head">
-              <p className="label">KINDLY REPLY</p>
+              <p className="label">KINDLY RSVP</p>
               <h2 className="title title-sm">Will you join us?</h2>
-              <p className="lead">We would be so happy to celebrate with you.</p>
-              <div className="reply-by">
-                <span>The favour of a reply is requested by</span>
-                <strong>{WEDDING.replyBy}</strong>
-              </div>
-              <p className="rsvp-rule">
-                <span className="rsvp-rule-title">No reply, no seat</span>
-                Seats and meals are prepared only for guests who have replied, so we can’t keep a place without one.
+              <p className="rsvp-lead">
+                Please confirm your attendance on or before <strong>{WEDDING.replyBy}</strong> so we can reserve your seat and finalize our guest list.
               </p>
+              <div className="reply-by">
+                <span className="rsvp-rule-title">No RSVP, no seat reserved</span>
+                <p className="rsvp-note">We sincerely ask for your prompt response and understanding as we make the necessary arrangements for our celebration.</p>
+              </div>
             </div>
             <Rsvp />
           </div>
+        </section>
+
+        <section className="gifts">
+          <svg className="gifts-rose" viewBox="0 0 120 20" aria-hidden="true">
+            <path d="M4 10H46M74 10H116" stroke="#c9a96e" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+            <g transform="translate(60 10)" fill="#c48a78">
+              {[0, 72, 144, 216, 288].map((r) => <circle key={r} cx="0" cy="-4.5" r="3.5" transform={`rotate(${r})`} />)}
+              <circle r="2.4" fill="#8b1e35" />
+            </g>
+          </svg>
+          <p className="label">GIFT PREFERENCE</p>
+          <p className="gifts-blessed">BY THE GRACE OF GOD, WE’VE BEEN TRULY BLESSED.</p>
+          <p className="gifts-request">Your presence and prayers are all we request.</p>
+          <p className="gifts-body">Should you wish to give us a gift, in lieu of material items, a monetary gift would be most appreciated. Your generosity will help us as we begin building our life together and plan for our future as husband and wife.</p>
+          <p className="gifts-body muted"><em>Above all, we are grateful to celebrate this milestone with you.</em></p>
         </section>
       </main>
 
@@ -399,7 +378,7 @@ export default function App() {
         <p className="title on-dark">See you soon</p>
         <Countdown iso={WEDDING.start} />
         <img className="seal-foot" src={asset('photos/crest.webp')} width="320" height="320" alt="" loading="lazy" />
-        <p className="lead">With love,<br />Shane &amp; Zessa</p>
+        <p className="lead">With love and gratitude,<br /><span className="finale-names names">Shane <span>&amp;</span> Zessa</span></p>
       </footer>
     </>
   )

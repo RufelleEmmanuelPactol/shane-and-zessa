@@ -8,6 +8,12 @@ export default defineConfig(({ command }) => ({
   plugins: [react()],
   base: command === 'build' ? (process.env.VITE_BASE || '/') : '/',
   server: {
-    proxy: { '/api': 'http://127.0.0.1:8000', '/media': 'http://127.0.0.1:8000' },
+    port: Number(process.env.PORT) || 5173,
+    // MEDIA_PROXY=https://shaneandzessa.com borrows the live site's images when
+    // the local backend has no S3 keys.
+    proxy: {
+      '/api': 'http://127.0.0.1:8000',
+      '/media': { target: process.env.MEDIA_PROXY || 'http://127.0.0.1:8000', changeOrigin: true },
+    },
   },
 }))

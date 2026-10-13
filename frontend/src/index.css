@@ -14,6 +14,7 @@
 
   --serif: 'EB Garamond', Georgia, serif;
   --script: 'Pinyon Script', cursive;
+  --script-names: 'Great Vibes', cursive;
 
   color-scheme: light;
 }
@@ -140,7 +141,7 @@ html { -webkit-tap-highlight-color: transparent; }
 
 /* cover: the photo, script and cut-out live on one 3:2 stage sized to the
    screen height; numbers below come from the 390×844 design */
-/* the cover is a full-screen layer over the page until it rolls away */
+/* the cover is a full-screen layer over the page until "Open the invitation" */
 html.is-sealed, html.is-sealed body { overflow: hidden; overscroll-behavior: none; }
 .cover {
   position: fixed;
@@ -190,84 +191,6 @@ html.is-sealed, html.is-sealed body { overflow: hidden; overscroll-behavior: non
 .cover.is-in .cover-names { opacity: 1; transform: none; }
 .cover.is-in .cover-bar { transform: none; }
 
-/* "Open the invitation": the card shrinks, a Victorian burgundy envelope closes
-   around it (liner showing until the flap folds over), the wax seal stamps it shut,
-   then the letter flies off (3.4s; COVER_EXIT_MS in App.jsx) */
-.env-defs { position: absolute; width: 0; height: 0; }
-.env-back, .env-pocket, .env-flap, .env-seal { position: absolute; opacity: 0; pointer-events: none; }
-.env-back, .env-pocket, .env-flap { left: 7%; width: 86%; }
-.env-back, .env-pocket { top: 31%; height: 52%; }
-.env-back { z-index: 1; filter: drop-shadow(0 28px 34px rgba(15, 4, 4, 0.65)) drop-shadow(0 2px 2px rgba(15, 4, 4, 0.5)); }
-.env-pocket { z-index: 3; filter: drop-shadow(0 -2px 3px rgba(15, 4, 4, 0.45)); }
-.env-flap {
-  z-index: 4;
-  top: 31%;
-  height: 33%;
-  transform-origin: 50% 0;
-}
-/* The fold is drawn in 2D (scaleY -1 → 1, liner face first, outer face after the
-   halfway point): 3D flips with hidden back faces are unreliable on phones. */
-.env-face { position: absolute; inset: 0; }
-.env-face svg { display: block; width: 100%; height: 100%; filter: drop-shadow(0 8px 6px rgba(15, 4, 4, 0.5)); }
-.env-flap-out { opacity: 0; }
-.env-seal {
-  z-index: 5;
-  left: 50%;
-  top: 62.4%;
-  width: 84px;
-  height: 84px;
-  margin: -42px 0 0 -42px;
-  filter: drop-shadow(0 3px 3px rgba(10, 2, 2, 0.6)) drop-shadow(0 8px 10px rgba(10, 2, 2, 0.35));
-}
-
-.cover::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at 50% 42%, #5a3528 0%, #2a140f 60%, #120806 100%);
-  opacity: 0;
-}
-.cover.is-leaving::before { animation: env-backdrop 3.4s ease both; }
-.cover.is-leaving .cover-bar { transform: translateY(100%); transition: transform 0.4s ease-in; transition-delay: 0s; }
-.cover.is-leaving .cover-names { opacity: 0; transition: opacity 0.3s ease; transition-delay: 0s; }
-.cover.is-leaving .cover-card { animation: env-card 1.25s cubic-bezier(0.65, 0, 0.35, 1) both; }
-.cover.is-leaving .env-back { animation: env-fade 0.5s ease 0.4s both; }
-.cover.is-leaving .env-pocket { animation: env-pocket 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.95s both; }
-.cover.is-leaving .env-flap { animation: env-show 0.5s ease 0.4s both, env-flap 0.85s cubic-bezier(0.45, 0, 0.55, 1) 1.5s both; }
-.cover.is-leaving .env-flap-in { animation: env-face-off 0.85s 1.5s both; }
-.cover.is-leaving .env-flap-out { animation: env-face-on 0.85s 1.5s both; }
-.cover.is-leaving .env-seal { animation: env-seal 0.5s cubic-bezier(0.3, 1.4, 0.6, 1) 2.25s both; }
-.cover.is-leaving .cover-letter { animation: env-away 0.8s cubic-bezier(0.6, 0, 0.8, 0.4) 2.65s both; }
-
-@keyframes env-backdrop { 0% { opacity: 0; } 15%, 82% { opacity: 1; } 100% { opacity: 0; } }
-/* the card shrinks, then drops a little into the envelope */
-@keyframes env-card {
-  0% { transform: none; border-radius: 0; }
-  70% { transform: scale(0.46) translateY(-6%); border-radius: 6px; box-shadow: 0 18px 40px rgba(10, 2, 2, 0.5); }
-  100% { transform: scale(0.46) translateY(10%); border-radius: 6px; box-shadow: 0 18px 40px rgba(10, 2, 2, 0.5); }
-}
-@keyframes env-fade { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: none; } }
-@keyframes env-pocket { from { opacity: 1; transform: translateY(85vh); } to { opacity: 1; transform: none; } }
-@keyframes env-show { from { opacity: 0; } to { opacity: 1; } }
-/* open (pointing up, liner showing) → folded shut over the card; darker edge-on */
-@keyframes env-flap {
-  0% { transform: scaleY(-1); filter: brightness(0.92); }
-  50% { transform: scaleY(0); filter: brightness(0.6); }
-  100% { transform: scaleY(1); filter: brightness(1); }
-}
-@keyframes env-face-off { 0% { opacity: 1; animation-timing-function: step-end; } 50%, 100% { opacity: 0; } }
-@keyframes env-face-on { 0% { opacity: 0; animation-timing-function: step-end; } 50%, 100% { opacity: 1; } }
-@keyframes env-seal {
-  0% { opacity: 0; transform: scale(2.2) rotate(-24deg); }
-  70% { opacity: 1; transform: scale(0.94) rotate(2deg); }
-  100% { opacity: 1; transform: none; }
-}
-@keyframes env-away {
-  0% { transform: none; }
-  25% { transform: translateY(2%) rotate(1deg); }
-  100% { transform: translateY(-125%) rotate(-8deg) scale(0.85); }
-}
-
 .cover-script {
   position: absolute;
   top: 8.29cqh;
@@ -300,7 +223,6 @@ html.is-sealed, html.is-sealed body { overflow: hidden; overscroll-behavior: non
   letter-spacing: 0.2em;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
 }
-.music ~ .cover .cover-names { right: 72px; }
 
 
 .cover-bar {
@@ -347,7 +269,13 @@ html.is-sealed, html.is-sealed body { overflow: hidden; overscroll-behavior: non
   color: var(--cream);
 }
 .invite-panel > :not(.stitch) { position: relative; }
-.invite-panel .label { margin-bottom: 18px; }
+.invite-blessing { margin-bottom: 8px; font-size: 19px; font-style: italic; color: var(--champagne); }
+/* the couple's names: italic serif with a script ampersand, everywhere */
+.names { font-style: italic; font-weight: 400; letter-spacing: 0.01em; }
+.names span { font-family: var(--script-names); font-style: normal; font-size: 1.1em; color: var(--rose); padding: 0 0.05em; }
+.invite-names { margin-bottom: 16px; font-size: 38px; line-height: 1.15; }
+.invite-names span { color: var(--champagne); }
+.finale-names { display: inline-block; margin-top: 6px; font-size: 28px; color: var(--maroon); }
 .stitch { position: absolute; right: -30px; bottom: -20px; width: 250px; height: 416px; }
 
 /* sections over paintings */
@@ -359,6 +287,7 @@ html.is-sealed, html.is-sealed body { overflow: hidden; overscroll-behavior: non
 .when .painting { object-position: 50% 50%; }
 .when::before { background: rgba(40, 22, 14, 0.28); }
 .when-inner { display: flex; flex-direction: column; gap: 20px; }
+.when-date { margin-top: 4px; font-size: 22px; font-weight: 500; color: var(--cream); text-shadow: 0 1px 10px rgba(20, 10, 5, 0.6); }
 .when .btn { margin-top: 2px; }
 
 .calendar {
@@ -385,31 +314,60 @@ html.is-sealed, html.is-sealed body { overflow: hidden; overscroll-behavior: non
 .cal-day.is-day { font-weight: 700; color: var(--maroon); }
 
 .day { padding: 56px 24px 52px; color: var(--cream); }
-.day .painting { object-position: 50% 50%; }
+.day .painting { object-position: 30% 50%; }
 .day::before { background: var(--burgundy); opacity: 0.72; }
+.day .rule { color: var(--champagne); }
 .day .label { margin-bottom: 6px; color: var(--champagne); }
 .day .title { color: var(--cream); margin-bottom: 20px; }
-.timeline { list-style: none; margin: 0; padding: 0; }
-.timeline li {
-  display: grid;
-  grid-template-columns: 92px minmax(0, 1fr);
-  column-gap: 12px;
-  padding: 18px 0;
-  border-top: 1px dashed rgba(230, 210, 176, 0.45);
-}
-.tl-time { color: var(--champagne); line-height: 1.3; }
-.tl-title { display: block; font-weight: 500; line-height: 1.3; }
-.tl-where { display: block; margin-top: 2px; font-size: 17px; line-height: 1.4; color: #e9dcc6; }
-.venues { display: grid; gap: 12px; margin-top: 8px; padding-top: 24px; border-top: 1px dashed rgba(230, 210, 176, 0.45); }
 
-/* dress code + painted collage */
-.attire { padding: 52px 24px 44px; color: var(--maroon); }
-.attire .label { margin-bottom: 6px; }
-.attire .lead { margin-top: 8px; color: var(--ink); }
-.collage { position: relative; height: 480px; margin: 32px -24px 28px; }
+/* vertical timeline: an icon on a dashed thread for each moment */
+.timeline { position: relative; list-style: none; margin: 0; padding: 4px 0 0; display: flex; flex-direction: column; gap: 22px; }
+.timeline::before { content: ''; position: absolute; left: 25px; top: 30px; bottom: 26px; border-left: 1.5px dashed rgba(232, 211, 180, 0.6); }
+.timeline li { position: relative; display: flex; align-items: center; gap: 18px; }
+.tl-icon {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--burgundy);
+  color: var(--champagne);
+  box-shadow: 0 0 0 1px rgba(232, 211, 180, 0.6);
+}
+.tl-icon svg { width: 26px; height: 26px; }
+.timeline li.is-main .tl-icon { background: var(--champagne); color: var(--burgundy); box-shadow: 0 0 0 4px var(--burgundy), 0 0 0 5px rgba(232, 211, 180, 0.7); }
+.tl-text { display: flex; flex-direction: column; gap: 2px; }
+.tl-time { font-size: 15px; font-weight: 500; letter-spacing: 0.14em; color: var(--champagne); }
+.tl-title { font-size: 21px; font-weight: 500; line-height: 1.25; }
+.timeline-close { margin-top: 28px; font-style: italic; color: var(--champagne); }
+
+/* venues: one card each, with directions on their own line */
+.venues { display: flex; flex-direction: column; gap: 12px; margin-top: 32px; padding-top: 28px; border-top: 1px dashed rgba(230, 210, 176, 0.45); }
+.venues .label { margin-bottom: 4px; }
+.venue { display: flex; flex-direction: column; gap: 16px; padding: 18px 16px 16px; border-radius: 16px; background: var(--cream); color: var(--ink); }
+.venue-head { display: flex; align-items: center; gap: 14px; }
+.venue-icon { flex: none; width: 52px; height: 52px; display: grid; place-items: center; border-radius: 50%; background: var(--burgundy); color: var(--champagne); }
+.venue-icon svg { width: 26px; height: 26px; }
+.venue-label { display: block; font-size: 13px; font-weight: 500; letter-spacing: 0.12em; white-space: nowrap; color: var(--maroon); }
+.venue-name { display: block; margin-top: 2px; font-size: 21px; font-weight: 500; line-height: 1.25; }
+.venue-go { min-height: 48px; font-size: 18px; }
+.venue-dark { border: 1px solid rgba(232, 211, 180, 0.55); background: rgba(43, 10, 18, 0.35); color: var(--cream); }
+.venue-dark .venue-icon { background: none; border: 1px solid rgba(232, 211, 180, 0.6); }
+.venue-dark .venue-label { color: var(--champagne); }
+.venue-dark .venue-go { background: none; border: 1.5px solid var(--champagne); color: var(--cream); }
+
+/* dress code: its own title, the painted collage, then the cards on a garden painting */
+.attire { padding: 52px 24px 40px; color: var(--maroon); }
+.attire-head { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+.ornament { position: relative; display: block; width: 72px; height: 1px; background: var(--rose); }
+.ornament::after { content: ''; position: absolute; left: 50%; top: -3px; width: 7px; height: 7px; margin-left: -3.5px; background: var(--page); border: 1px solid var(--rose); transform: rotate(45deg); }
+.attire-title { font-size: 30px; font-weight: 500; letter-spacing: 0.24em; padding-left: 0.24em; line-height: 1.2; }
+
+.collage { position: relative; height: 480px; margin: 32px -24px 0; }
 .collage-base { position: absolute; left: 0; right: 0; top: 70px; bottom: 0; overflow: hidden; }
-.collage-base img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 60%; }
-/* scalloped lace edge */
+.collage-base img { width: 100%; height: 100%; object-fit: cover; object-position: 40% 60%; }
+/* scalloped lace edge along the top of the painting */
 .collage-base::before {
   content: '';
   position: absolute;
@@ -423,12 +381,13 @@ html.is-sealed, html.is-sealed body { overflow: hidden; overscroll-behavior: non
     radial-gradient(circle at 8px 6px, var(--page) 8px, transparent 8.5px) 0 0 / 16px 14px repeat-x,
     linear-gradient(var(--page), var(--page)) 0 0 / 100% 6px no-repeat;
 }
-/* everything placed on the collage sits above the lace edge */
+/* the pictures sit above the lace edge; the lace band then covers the feet */
 .collage-print, .collage-oval, .collage-couple { z-index: 2; }
-.collage-print { position: absolute; padding: 6px; background: #fbf6ef; box-shadow: 0 10px 22px -10px rgba(40, 20, 10, 0.55); }
+.collage-print { position: absolute; padding: 6px; background: #fbf6ef; }
 .collage-print img { width: 100%; height: 100%; object-fit: cover; }
 .collage-giverny { right: 18px; top: 0; width: 132px; height: 104px; transform: rotate(5deg); }
-.collage-bordighera { left: 20px; bottom: 26px; width: 88px; height: 66px; padding: 5px; transform: rotate(-4deg); }
+/* the small print overlaps the top of the lace band */
+.collage-bordighera { z-index: 4; right: 22px; bottom: 100px; width: 88px; height: 66px; padding: 5px; transform: rotate(4deg); }
 .collage-oval {
   position: absolute;
   left: 14px;
@@ -438,7 +397,7 @@ html.is-sealed, html.is-sealed body { overflow: hidden; overscroll-behavior: non
   border-radius: 50%;
   overflow: hidden;
   transform: rotate(-6deg);
-  box-shadow: 0 0 0 4px #c9a96e, 0 0 0 6px #8a6a3a, 0 12px 22px -8px rgba(40, 20, 10, 0.6);
+  box-shadow: 0 0 0 4px #c9a96e, 0 0 0 6px #8a6a3a;
 }
 .collage-oval img { width: 100%; height: 100%; object-fit: cover; object-position: 45% 40%; }
 .collage-couple {
@@ -449,19 +408,59 @@ html.is-sealed, html.is-sealed body { overflow: hidden; overscroll-behavior: non
   width: auto;
   max-width: none;
   transform: translateX(-50%);
-  filter: drop-shadow(0 14px 18px rgba(30, 10, 5, 0.45));
 }
-.attire .label.muted { margin-bottom: 14px; }
-.swatches {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 6px;
+/* lace band: scallops on top, then cream with a small rose rule */
+.collage-lace {
+  position: absolute;
+  z-index: 3;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 130px;
+  padding-top: 20px;
+  background:
+    radial-gradient(circle at 8px 9px, var(--champagne) 2px, transparent 2.5px) 0 0 / 16px 14px repeat-x,
+    radial-gradient(circle at 8px 8px, var(--page) 8px, transparent 8.5px) 0 0 / 16px 14px repeat-x,
+    linear-gradient(var(--page), var(--page)) 0 8px / 100% 100% no-repeat;
 }
-.swatches li { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; font-size: 13px; line-height: 1.15; color: var(--ink); }
-.swatches li span { width: 46px; max-width: 100%; height: 64px; border-radius: 23px 23px 6px 6px; box-shadow: inset 0 0 0 1px rgba(46, 36, 32, 0.18); }
+.collage-lace svg { display: block; width: 100%; height: 28px; }
+
+.attire-garden { position: relative; overflow: hidden; isolation: isolate; margin: 8px -24px 0; padding: 20px 24px 40px; }
+.attire-painting { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; object-position: 50% 35%; }
+/* cream at the top and bottom, the painting showing through in between */
+.attire-garden::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(var(--page) 0, rgba(241, 230, 214, 0.55) 70px, rgba(241, 230, 214, 0) 260px, rgba(241, 230, 214, 0.2) calc(100% - 200px), var(--page) 100%);
+}
+.attire-garden .title { margin-bottom: 22px; text-align: center; }
+.attire-cards { display: flex; flex-direction: column; gap: 18px; }
+/* same colour as the drawings' paper, so they sit on the card without a box */
+.attire-card { padding: 26px 20px 24px; border-radius: 4px; background: #f6ece2; text-align: center; color: var(--ink); }
+.attire-who { font-size: 18px; font-style: italic; color: var(--maroon); }
+.attire-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 10px -6px 6px; }
+.attire-pair img { width: 100%; height: auto; aspect-ratio: 1; }
+.attire-single { width: 220px; height: 220px; margin: 6px auto 4px; }
+.attire-what { font-size: 28px; font-weight: 500; line-height: 1.2; }
+.attire-detail { margin-top: 6px; font-size: 17px; color: #5a463d; }
+.diamond { display: inline-block; width: 5px; height: 5px; margin: 0 10px 3px; background: #c9a96e; transform: rotate(45deg); }
+.attire-card .swatches { margin-top: 22px; padding-top: 18px; border-top: 1px solid #e2d6c2; }
+.attire-note { margin-top: 18px; font-size: 17px; font-style: italic; line-height: 1.5; color: #5a463d; }
+
+.swatches { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.swatches li { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 13px; letter-spacing: 0.08em; color: #5a463d; }
+.swatches li span { width: 44px; height: 44px; border-radius: 50%; box-shadow: 0 0 0 3px var(--cream), 0 0 0 4px #c9a96e; }
+
+/* gift preference */
+.gifts { padding: 56px 28px 52px; text-align: center; }
+.gifts-rose { display: block; width: 120px; height: 20px; margin: 0 auto 18px; }
+.gifts .label { margin-bottom: 6px; color: var(--maroon); }
+.gifts-blessed { margin: 0 -12px; font-size: 13px; font-weight: 500; letter-spacing: 0.16em; line-height: 1.6; color: var(--ink-soft); }
+.gifts-request { margin-top: 18px; font-family: var(--script); font-size: 36px; line-height: 1.2; color: var(--maroon); }
+.gifts-body { margin-top: 18px; font-size: 18px; line-height: 1.55; }
+
 
 /* floating words */
 .words { position: relative; height: 580px; overflow: hidden; }
@@ -487,14 +486,15 @@ html.is-sealed, html.is-sealed body { overflow: hidden; overscroll-behavior: non
 .reply-by::before, .reply-by::after { content: ''; position: absolute; left: 50%; width: 7px; height: 7px; margin-left: -3.5px; background: #f6eee3; border: 1px solid var(--rose); transform: rotate(45deg); }
 .reply-by::before { top: -4px; }
 .reply-by::after { bottom: -4px; }
-.reply-by span { font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-soft); }
-.reply-by strong { font-size: 24px; font-weight: 500; color: var(--burgundy); }
-.rsvp-rule { margin: 20px auto 0; max-width: 30ch; font-size: 17px; line-height: 1.5; color: var(--ink-soft); }
-.rsvp-rule-title { display: block; margin-bottom: 4px; font-size: 13px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--maroon); }
+.rsvp-lead { margin-top: 10px; font-size: 19px; line-height: 1.45; }
+.rsvp-lead strong { font-weight: 600; color: var(--burgundy); }
+.rsvp-note { margin-top: 14px; font-size: 17px; line-height: 1.5; color: var(--ink-soft); }
+.reply-by .rsvp-note { margin-top: 0; }
+.rsvp-rule-title { display: block; margin-bottom: 2px; font-size: 13px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--maroon); }
 
 .reply-shell {
   border-radius: 16px;
-  background: var(--page);
+  background: var(--cream);
   overflow: hidden;
   transition: height 0.5s var(--ease-out);
   box-shadow: 0 18px 40px -24px rgba(40, 20, 10, 0.45);
@@ -502,10 +502,29 @@ html.is-sealed, html.is-sealed body { overflow: hidden; overscroll-behavior: non
 .reply-card {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 20px 18px 24px;
+  gap: 24px;
+  padding: 24px 18px 26px;
   scroll-margin-top: 16px;
 }
+.reply-part { display: flex; flex-direction: column; gap: 10px; }
+.reply-rule { padding-top: 22px; border-top: 1px solid #e2d6c2; }
+.reply-q { font-size: 22px; font-weight: 500; }
+.reply-q:focus, .recap p:focus { outline: none; }
+.reply-q .muted { font-weight: 400; }
+.reply-help { margin-top: -6px; font-size: 17px; color: var(--ink-soft); }
+.recap { display: flex; align-items: center; gap: 8px; margin: -6px 0 -4px; }
+.recap p { font-size: 17px; color: var(--ink-soft); }
+.recap strong { font-weight: 500; color: var(--ink); }
+.recap .back { flex: none; }
+
+/* skeleton rows while the guest list answers */
+.skeleton li { min-height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-radius: 10px; border: 1px solid #e2d6c2; background: var(--field); }
+.skeleton span { height: 14px; border-radius: 7px; background: linear-gradient(90deg, #ece0cf 0, #f8f1e6 50%, #ece0cf 100%) 0 0 / 400px 100%; animation: shimmer 1.2s ease-in-out infinite; }
+.skeleton li + li span { animation-delay: 120ms; }
+@keyframes shimmer { from { background-position: -200px 0; } to { background-position: 200px 0; } }
+.spinner { width: 18px; height: 18px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .reply-card[data-dir='forward'] { animation: step-in-fwd 0.5s var(--ease-out) both; }
 .reply-card[data-dir='back'] { animation: step-in-back 0.5s var(--ease-out) both; }
 @keyframes step-in-fwd { from { opacity: 0; transform: translateX(28px); } }
@@ -520,28 +539,12 @@ html.is-sealed, html.is-sealed body { overflow: hidden; overscroll-behavior: non
 .tick { display: inline-block; animation: tick 0.35s var(--spring); }
 @keyframes tick { from { transform: scale(0.7); opacity: 0.3; } }
 
-.steps-bar span { position: relative; overflow: hidden; }
-.steps-bar span::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--maroon);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.6s var(--ease-out) 0.1s;
-}
-.steps-bar span.on::after { transform: none; }
 .flow-title { font-family: var(--script); font-weight: 400; font-size: 44px; line-height: 1.15; color: var(--maroon); }
 .flow-title:focus { outline: none; }
 .body { font-size: 20px; line-height: 1.45; }
 .body.small { font-size: 17px; text-align: center; }
 .hint { margin-top: -6px; font-size: 16px; color: var(--ink-soft); }
 
-.steps { display: flex; flex-direction: column; gap: 10px; }
-.steps-row { display: flex; align-items: center; justify-content: space-between; min-height: 44px; }
-.steps-count { font-size: 15px; color: var(--ink-soft); }
-.steps-bar { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
-.steps-bar span { height: 3px; border-radius: 2px; background: #dccbb6; }
 .back { width: 44px; height: 44px; margin-left: -10px; display: grid; place-items: center; padding: 0; border: 0; background: none; color: var(--maroon); cursor: pointer; }
 .back svg { width: 24px; height: 24px; }
 
@@ -580,12 +583,13 @@ input[type='search']::-webkit-search-cancel-button { -webkit-appearance: none; }
   text-align: left;
   cursor: pointer;
 }
-.seats { font-size: 16px; color: var(--ink-soft); }
+.seats { flex: none; font-size: 16px; white-space: nowrap; color: var(--ink-soft); }
 
-.notice { display: flex; flex-direction: column; gap: 10px; padding: 18px; border-radius: 12px; background: var(--cream); font-size: 18px; }
+.notice { display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 12px; background: var(--page); font-size: 18px; }
 .notice-title { font-size: 20px; font-weight: 500; }
 
-.chip { padding: 14px 16px; border-radius: 10px; background: #f3e3e0; border: 1px solid var(--maroon); font-size: 18px; line-height: 1.4; }
+.chip { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px 12px 16px; border-radius: 10px; background: #f3e3e0; border: 1px solid var(--maroon); font-size: 18px; line-height: 1.4; }
+.chip .link { flex: none; padding: 0 4px; font-size: 16px; }
 .chip strong { font-weight: 500; }
 
 .choices { display: flex; flex-direction: column; gap: 10px; }
@@ -617,10 +621,10 @@ input[type='search']::-webkit-search-cancel-button { -webkit-appearance: none; }
 
 .field { display: flex; flex-direction: column; gap: 6px; }
 .field label, .field-label { font-size: 17px; font-weight: 500; }
-.fixed { height: 52px; display: flex; align-items: center; padding: 0 14px; border-radius: 10px; background: var(--cream); }
+.fixed { height: 52px; display: flex; align-items: center; padding: 0 14px; border-radius: 10px; background: var(--page); }
 
-.stepper { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border-radius: 12px; background: var(--cream); }
-.stepper > span { font-size: 19px; font-weight: 500; }
+.stepper { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.stepper > span { font-size: 18px; }
 .stepper [role='group'] { display: flex; align-items: center; gap: 4px; }
 .stepper [role='group'] > span { min-width: 36px; text-align: center; font-size: 22px; font-weight: 500; }
 .stepper button {
@@ -636,10 +640,10 @@ input[type='search']::-webkit-search-cancel-button { -webkit-appearance: none; }
 }
 .stepper button:disabled { border-color: #e2d6c2; background: var(--cream); color: #b8a99a; cursor: default; }
 
-.kids { padding: 14px 16px; border-radius: 10px; border: 1px solid var(--line); font-size: 17px; line-height: 1.45; color: var(--ink-soft); }
+.kids { padding: 14px 16px; border-radius: 10px; border: 1px solid var(--line); font-size: 17px; line-height: 1.45; color: #5a463d; }
 .kids-title { margin-bottom: 4px; font-size: 13px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--maroon); }
 
-.summary { display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 12px; background: var(--cream); }
+.summary { display: flex; flex-direction: column; gap: 6px; padding: 16px; border-radius: 12px; background: var(--page); }
 .summary .label { color: var(--ink-soft); }
 .summary-text { font-size: 19px; white-space: pre-line; }
 .summary .link { align-self: flex-start; padding: 0; }
@@ -685,33 +689,56 @@ input[type='search']::-webkit-search-cancel-button { -webkit-appearance: none; }
 .cd-label { font-size: 15px; color: var(--champagne); }
 .seal-foot { width: 72px; height: 72px; margin: 32px auto 14px; }
 
-/* phone-only gate */
-.gate {
-  min-height: 100vh;
-  min-height: 100svh;
-  display: grid;
-  place-items: center;
-  padding: 24px;
-  background: var(--burgundy);
+/* phone-only gate: the cover photo beside a note with a QR code */
+/* the gate is for laptops and tablets, so it uses the whole window */
+#root:has(.gate) { max-width: none; }
+.gate { min-height: 100vh; min-height: 100svh; display: flex; flex-wrap: wrap; background: var(--burgundy); }
+.gate-photo { position: relative; flex: 1.35 1 480px; min-height: 360px; overflow: hidden; background: #2b2a1e; container-type: size; }
+.gate-stage { position: absolute; top: 0; bottom: 0; width: 150cqh; left: calc((100cqw - 150cqh) * 0.44); }
+/* the phone cover's "Our wedding day", a little larger */
+.gate-script {
+  position: absolute;
+  top: 6cqh;
+  left: 42cqh;
+  font-family: 'Mrs Saint Delafield', cursive;
+  font-size: 15.5cqh;
+  line-height: 0.8;
+  white-space: nowrap;
+  color: var(--blush);
+  transform: rotate(-7deg);
+  transform-origin: 0 0;
+  text-shadow: 0 2px 18px rgba(30, 10, 10, 0.45);
 }
-.gate-card {
-  width: min(440px, 100%);
+.gate-script span { display: block; }
+.gate-script span:nth-child(2) { padding-left: 21cqh; }
+.gate-script span:nth-child(3) { padding-left: 44cqh; }
+.gate-date {
+  position: absolute;
+  left: 36px;
+  right: 36px;
+  bottom: 32px;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 14px;
-  padding: 48px 32px;
-  border-radius: 16px;
-  background: var(--cream);
-  text-align: center;
+  gap: 18px;
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  color: var(--cream);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.6);
 }
-.gate-names { font-family: var(--script); font-size: 56px; line-height: 1.1; color: var(--maroon); }
-.gate-names span { font-size: 0.7em; padding: 0 0.15em; }
-.gate .rule { color: var(--maroon); margin: 0; }
-.gate-title { font-size: 22px; font-weight: 500; }
-.gate-body { font-size: 18px; color: var(--ink-soft); }
-.gate-qr { margin-top: 8px; border-radius: 8px; }
-.gate-rotate { width: 64px; height: 64px; color: var(--maroon); }
+.gate-date span { flex: 1; height: 1px; background: rgba(246, 239, 226, 0.7); }
+.gate-panel { flex: 1 1 440px; display: flex; align-items: center; justify-content: center; padding: 56px 40px; background: var(--cream); }
+.gate-card { width: 100%; max-width: 440px; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; }
+.gate-crest { width: 72px; height: 72px; }
+/* names in italic serif so they read at a glance; only the ampersand is script */
+.gate-names { font-size: 52px; line-height: 1.1; color: var(--maroon); }
+.gate .rule { width: 64px; margin: 0; color: var(--maroon); }
+.gate-title { font-size: 28px; font-weight: 500; line-height: 1.25; }
+.gate-body { max-width: 34ch; font-size: 20px; color: var(--ink-soft); }
+.gate-qr { min-width: 250px; min-height: 250px; margin-top: 12px; padding: 14px; border-radius: 16px; border: 1px solid var(--line); background: var(--cream); box-shadow: 0 18px 40px -24px rgba(40, 20, 10, 0.45); }
+.gate-qr img { width: 220px; height: 220px; }
+.gate-rotate { width: 80px; height: 80px; color: var(--maroon); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 1ms !important; animation-delay: 0ms !important; transition-duration: 1ms !important; transition-delay: 0ms !important; }

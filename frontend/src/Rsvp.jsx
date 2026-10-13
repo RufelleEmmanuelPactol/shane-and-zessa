@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { asset, CONTACT_URL, WEDDING } from './wedding.js'
+import { asset, CONTACT_URL } from './wedding.js'
 import { addToCalendar } from './ics.js'
-import { CalendarIcon, ChevronLeft, MessageIcon, SearchIcon } from './icons.jsx'
+import { ArrowRight, CalendarIcon, ChevronLeft, MessageIcon, SearchIcon } from './icons.jsx'
 
 // Replies are saved by the Django backend (POST /api/rsvp/). A copy is kept on
 // the guest's phone so they see their reply when they come back.
@@ -30,9 +30,11 @@ function useGuestSearch(query, active) {
   return { results: ready ? state.results : [], failed: ready && state.failed, done: ready }
 }
 
-const ORDER = ['find', 'attend', 'party', 'note', 'done']
+// Two screens: find your name and say if you can come, then who's coming and a note.
+const ORDER = ['a', 'b', 'done']
 
-const seatsText = (n) => (n === 1 ? '1 seat' : `${n} seats`)
+const seatLine = (n) => (n === 1 ? 'We’ve saved a seat for you.' : `We’ve saved ${n} seats for you.`)
+const ANSWERS = { yes: 'Yes, I’ll be there', no: 'Sorry, I can’t make it' }
 
 function load() {
   try {
@@ -43,9 +45,9 @@ function load() {
 }
 
 function summary(r) {
-  if (r.attending === 'no') return 'Regretfully declines'
-  const others = r.names.slice(1).filter(Boolean)
-  return others.length ? `Joyfully accepts\n${[r.names[0], ...others].join(', ')}` : 'Joyfully accepts'
+  if (r.attending === 'no') return 'Sorry, can’t make it'
+  const names = r.names.filter(Boolean)
+  return names.length > 1 ? `Yes, we’ll be there\n${names.join(', ')}` : 'Yes, we’ll be there'
 }
 
 function replyText(r, updated) {
@@ -56,25 +58,22 @@ function replyText(r, updated) {
   return lines.join('\n')
 }
 
-function Steps({ n, onBack }) {
+// Placeholder rows while the guest list answers.
+function Skeleton() {
   return (
-    <div className="steps">
-      <div className="steps-row">
-        {onBack ? (
-          <button type="button" className="back" onClick={onBack} aria-label="Back"><ChevronLeft /></button>
-        ) : <span />}
-        <span className="steps-count">Step {n} of 4</span>
-      </div>
-      <div className="steps-bar" aria-hidden="true">
-        {[1, 2, 3, 4].map((i) => <span key={i} className={i <= n ? 'on' : ''} />)}
-      </div>
-    </div>
+    <>
+      <ul className="results skeleton" aria-hidden="true">
+        <li><span style={{ width: 132 }} /><span style={{ width: 52 }} /></li>
+        <li><span style={{ width: 96 }} /><span style={{ width: 52 }} /></li>
+      </ul>
+      <p className="sr-only" role="status">Looking for your name…</p>
+    </>
   )
 }
 
 function Flow() {
   const [saved, setSaved] = useState(load)
-  const [step, setStep] = useState(saved ? 'done' : 'find')
+  const [page, setPage] = useState(saved ? 'done' : 'a')
   const [dir, setDir] = useState('none')
   const [query, setQuery] = useState('')
   const [pick, setPick] = useState(null)
@@ -88,58 +87,63 @@ function Flow() {
   const card = useRef(null)
   const first = useRef(true)
 
-  // move focus to the new step's heading so screen readers follow along
+  // move focus to the new screen's heading so screen readers follow along
   useEffect(() => {
     if (first.current) {
       first.current = false
       return
     }
-    card.current?.querySelector('h3')?.focus({ preventScroll: true })
+    card.current?.querySelector('[data-focus]')?.focus({ preventScroll: true })
     const top = card.current?.getBoundingClientRect().top ?? 0
     // only scroll when the card's top has gone off screen
     if (top < 0) card.current.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
-  }, [step])
+  }, [page])
 
-  const go = (s) => {
+  const go = (p) => {
     setError('')
-    setDir(ORDER.indexOf(s) < ORDER.indexOf(step) ? 'back' : 'forward')
-    setStep(s)
+    setDir(ORDER.indexOf(p) < ORDER.indexOf(page) ? 'back' : 'forward')
+    setPage(p)
   }
 
-  const { results, failed, done } = useGuestSearch(query, step === 'find' && !pick)
+  const typed = query.trim().length >= 2
+  const { results, failed, done } = useGuestSearch(query, page === 'a' && !pick)
+  const searching = typed && !pick && !done
   const seats = pick?.seats ?? 1
+  const yes = attending === 'yes'
 
   function choose(g) {
     setPick(g)
     setQuery(g.name)
+    setAttending('')
     setCount(1)
     setNames([])
     setFullName('')
-    go('attend')
+    setError('')
   }
 
-  function afterAttend() {
-    if (!attending) return setError('Please choose one.')
-    go(attending === 'yes' ? 'party' : 'note')
-  }
-
-  function afterParty() {
-    if (pick.sponsor && !fullName.trim()) return setError('Please write your complete name.')
-    const missing = Array.from({ length: count - 1 }, (_, i) => names[i]).findIndex((n) => !n?.trim())
-    if (missing !== -1) return setError(`Please write Guest ${missing + 2}’s name.`)
-    go('note')
+  function notYou() {
+    setPick(null)
+    setQuery('')
+    setAttending('')
+    setError('')
   }
 
   const reply = () => ({
     guest: { id: pick.id, name: pick.name, seats: pick.seats, sponsor: pick.sponsor },
     name: pick.name,
     attending,
-    fullName: pick.sponsor && attending === 'yes' ? fullName.trim() : '',
-    names: attending === 'yes' ? [pick.name, ...names.slice(0, count - 1).map((n) => n.trim())] : [],
+    fullName: pick.sponsor && yes ? fullName.trim() : '',
+    names: yes ? [pick.name, ...names.slice(0, count - 1).map((n) => (n ?? '').trim())] : [],
     note: note.trim(),
   })
 
   async function send() {
+    if (sending) return
+    if (yes && pick.sponsor && !fullName.trim()) return setError('Please write your full name.')
+    if (yes) {
+      const missing = Array.from({ length: count - 1 }, (_, i) => names[i]).findIndex((n) => !n?.trim())
+      if (missing !== -1) return setError(`Please write Guest ${missing + 2}’s name.`)
+    }
     const r = reply()
     setSending(true)
     setError('')
@@ -173,9 +177,8 @@ function Flow() {
     const r = saved
     const g = r.guest
     if (!g?.id) {
-      setPick(null)
-      setQuery('')
-      return go('find')
+      notYou()
+      return go('a')
     }
     setPick(g)
     setQuery(g.name)
@@ -184,25 +187,25 @@ function Flow() {
     setNames(r.names.slice(1))
     setFullName(r.fullName)
     setNote(r.note)
-    go('attend')
+    go('a')
   }
 
   const err = error && <p className="form-error" role="alert">{error}</p>
 
-  if (step === 'done' && saved) {
-    const yes = saved.attending === 'yes'
+  if (page === 'done' && saved) {
+    const came = saved.attending === 'yes'
     return (
-      <div className="reply-card thanks" ref={card} key={step} data-dir={dir}>
+      <div className="reply-card thanks" ref={card} key={page} data-dir={dir}>
         <img className="thanks-seal" src={asset('photos/crest.webp')} width="320" height="320" alt="" />
-        <h3 className="flow-title" tabIndex={-1}>Thank you, {saved.name}</h3>
+        <h3 className="flow-title" tabIndex={-1} data-focus>Thank you, {saved.name}</h3>
         <p className="body">
-          {yes ? 'We’re so happy you’ll be there. See you on the 29th.' : 'We’ll miss you, and we’re grateful you let us know.'}
+          {came ? 'We’re so happy you’ll be there. See you on the 29th!' : 'We’ll miss you, and we’re grateful you let us know.'}
         </p>
         <div className="summary">
           <p className="label">YOUR REPLY</p>
           <p className="summary-text">{summary(saved)}</p>
         </div>
-        {yes && (
+        {came && (
           <button type="button" className="btn btn-line" onClick={addToCalendar}>
             <CalendarIcon /> Add to my calendar
           </button>
@@ -212,166 +215,159 @@ function Flow() {
     )
   }
 
-  if (step === 'find') {
-    const noMatch = done && !failed && results.length === 0
+  if (page === 'a') {
+    const noMatch = typed && !pick && done && !failed && results.length === 0
     return (
-      <div className="reply-card" ref={card} key={step} data-dir={dir}>
-        <Steps n={1} />
-        <h3 className="flow-title" tabIndex={-1}>Find your name</h3>
-        <label htmlFor="find" className="body">Type your name as it appears on your invitation.</label>
-        <div className="search">
-          <SearchIcon />
-          <input
-            id="find"
-            type="search"
-            autoComplete="off"
-            enterKeyHint="search"
-            placeholder="e.g. Rhian"
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value)
-              setPick(null)
-            }}
-          />
-        </div>
-        {results.length > 0 && (
-          <ul className="results">
-            {results.map((g) => (
-              <li key={g.id}>
-                <button type="button" onClick={() => choose(g)}>
-                  <span>{g.name}</span>
-                  <span className="seats">{seatsText(g.seats)}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-        {failed && <p className="form-error" role="alert">We couldn’t search the guest list just now. Please check your connection and try again.</p>}
-        {noMatch && (
-          <>
-            <div className="notice">
-              <p className="notice-title">We couldn’t find that name</p>
-              <p>Try just your first name, or the name we usually call you. If it still doesn’t show up, send us a message and we’ll add you.</p>
-            </div>
-            <a className="btn btn-line" href={CONTACT_URL} target="_blank" rel="noopener noreferrer">
-              <MessageIcon /> Message Shane &amp; Zessa
-            </a>
-          </>
-        )}
-      </div>
-    )
-  }
-
-  if (step === 'attend') {
-    return (
-      <div className="reply-card" ref={card} key={step} data-dir={dir}>
-        <Steps n={2} onBack={() => go('find')} />
-        <p className="chip">
-          Hi, <strong>{pick.name}</strong>! {seats === 1 ? 'We’ve saved a seat for you.' : `We’ve saved ${seats} seats for your party.`} Only the guests named on your reply can be seated.
-        </p>
-        <h3 className="flow-title" tabIndex={-1} id="attend-q">Can you make it?</h3>
-        <div className="choices" role="radiogroup" aria-labelledby="attend-q">
-          {[['yes', 'Joyfully accepts'], ['no', 'Regretfully declines']].map(([v, label]) => (
-            <button
-              key={v}
-              type="button"
-              role="radio"
-              aria-checked={attending === v}
-              className={attending === v ? 'choice is-on' : 'choice'}
-              onClick={() => {
-                setAttending(v)
-                setError('')
-              }}
-            >
-              <span className="dot" aria-hidden="true" />
-              {label}
-            </button>
-          ))}
-        </div>
-        {err}
-        <button type="button" className="btn" onClick={afterAttend}>Continue</button>
-      </div>
-    )
-  }
-
-  if (step === 'party') {
-    return (
-      <div className="reply-card" ref={card} key={step} data-dir={dir}>
-        <Steps n={3} onBack={() => go('attend')} />
-        <h3 className="flow-title" tabIndex={-1}>Who’s coming?</h3>
-
-        {pick.sponsor && (
-          <div className="field">
-            <label htmlFor="fullname">Your complete name, for the programme</label>
-            <input id="fullname" type="text" autoComplete="name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
-          </div>
-        )}
-
-        {seats > 1 && (
-          <>
-            <div className="stepper">
-              <span id="guests-label">Guests, including you</span>
-              <div role="group" aria-labelledby="guests-label">
-                <button type="button" aria-label="One fewer guest" disabled={count <= 1} onClick={() => setCount(count - 1)}>−</button>
-                <span aria-live="polite" key={count} className="tick">{count}</span>
-                <button type="button" aria-label="One more guest" disabled={count >= seats} onClick={() => setCount(count + 1)}>+</button>
-              </div>
-            </div>
-            <p className="hint">Your invitation has {seats} seats. We can’t add more.</p>
-          </>
-        )}
-
-        <div className="field">
-          <span className="field-label">Guest 1</span>
-          <p className="fixed">{pick.name}</p>
-        </div>
-        {Array.from({ length: count - 1 }, (_, i) => (
-          <div className="field" key={i}>
-            <label htmlFor={`guest-${i + 2}`}>Guest {i + 2}’s name</label>
+      <div className="reply-card" ref={card} key={page} data-dir={dir}>
+        <div className="reply-part">
+          <label htmlFor="find" className="reply-q" tabIndex={-1} data-focus>Your name</label>
+          <p className="reply-help">Type it the way it’s written on your invitation.</p>
+          <div className="search">
+            <SearchIcon />
             <input
-              id={`guest-${i + 2}`}
-              type="text"
-              placeholder="A first name is fine"
-              value={names[i] ?? ''}
+              id="find"
+              type="search"
+              autoComplete="off"
+              enterKeyHint="search"
+              placeholder="e.g. Rhian"
+              value={query}
               onChange={(e) => {
-                const next = [...names]
-                next[i] = e.target.value
-                setNames(next)
+                setQuery(e.target.value)
+                setPick(null)
+                setAttending('')
               }}
             />
           </div>
-        ))}
-
-        <div className="kids">
-          <p className="kids-title">Children &amp; plus ones</p>
-          <p>Ours is an adults-only celebration, and we can only welcome the guests named on your invitation. Please don’t bring anyone who isn’t listed.</p>
+          {searching && <Skeleton />}
+          {!pick && results.length > 0 && (
+            <ul className="results">
+              {results.map((g) => (
+                <li key={g.id}>
+                  <button type="button" onClick={() => choose(g)}>
+                    <span>{g.name}</span>
+                    <span className="seats">That’s me</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          {failed && <p className="form-error" role="alert">We couldn’t search the guest list just now. Please check your connection and try again.</p>}
+          {noMatch && (
+            <>
+              <div className="notice">
+                <p className="notice-title">We can’t find that name</p>
+                <p>Try just your first name, or the name we usually call you. Still nothing? Send us a message and we’ll add you.</p>
+              </div>
+              <a className="btn btn-line" href={CONTACT_URL} target="_blank" rel="noopener noreferrer">
+                <MessageIcon /> Message Shane &amp; Zessa
+              </a>
+            </>
+          )}
+          {pick && (
+            <div className="chip">
+              <p>Hi, <strong>{pick.name}</strong>! {seatLine(seats)}</p>
+              <button type="button" className="link" onClick={notYou}>Not you?</button>
+            </div>
+          )}
         </div>
-        {err}
-        <button type="button" className="btn" onClick={afterParty}>Continue</button>
+
+        {pick && (
+          <div className="reply-part reply-rule">
+            <p className="reply-q" id="come-q">Can you come?</p>
+            <div className="choices" role="radiogroup" aria-labelledby="come-q">
+              {Object.entries(ANSWERS).map(([v, label]) => (
+                <button
+                  key={v}
+                  type="button"
+                  role="radio"
+                  aria-checked={attending === v}
+                  className={attending === v ? 'choice is-on' : 'choice'}
+                  onClick={() => {
+                    setAttending(v)
+                    setError('')
+                  }}
+                >
+                  <span className="dot" aria-hidden="true" />
+                  {label}
+                </button>
+              ))}
+            </div>
+            {yes && (
+              <div className="kids">
+                <p className="kids-title">Named guests only</p>
+                <p>Kindly note that only guests who have received this invitation link are invited. As seats are limited, we are unable to accommodate additional guests or plus-ones unless specifically named in the invitation.</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {pick && attending && (
+          <button type="button" className="btn" onClick={() => go('b')}>Continue <ArrowRight /></button>
+        )}
       </div>
     )
   }
 
-  // step === 'note'
-  const r = reply()
+  // page === 'b'
   return (
-    <div className="reply-card" ref={card} key={step} data-dir={dir}>
-      <Steps n={4} onBack={() => go(attending === 'yes' ? 'party' : 'attend')} />
-      <h3 className="flow-title" tabIndex={-1}>A note for us</h3>
-      <label htmlFor="note" className="body">
-        Anything we should know? Dietary needs, a song request, or just a kind word. <span className="muted">(Optional)</span>
-      </label>
-      <textarea id="note" rows={4} placeholder="Write a note…" value={note} onChange={(e) => setNote(e.target.value)} />
-      <div className="summary">
-        <p className="label">YOUR REPLY</p>
-        <p className="summary-text">{summary(r)}</p>
-        <button type="button" className="link" onClick={() => go('attend')}>Edit</button>
+    <div className="reply-card" ref={card} key={page} data-dir={dir}>
+      <div className="recap">
+        <button type="button" className="back" onClick={() => go('a')} aria-label="Back"><ChevronLeft /></button>
+        <p tabIndex={-1} data-focus><strong>{pick.name}</strong> · {ANSWERS[attending]}</p>
       </div>
+
+      {yes && (
+        <div className="reply-part">
+          <p className="reply-q">Who’s coming?</p>
+          {pick.sponsor && (
+            <div className="field">
+              <label htmlFor="fullname">Your full name, for the programme</label>
+              <input id="fullname" type="text" autoComplete="name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+            </div>
+          )}
+          {seats > 1 && (
+            <>
+              <div className="stepper">
+                <span id="guests-label">How many of you, including you?</span>
+                <div role="group" aria-labelledby="guests-label">
+                  <button type="button" aria-label="One fewer" disabled={count <= 1} onClick={() => setCount(count - 1)}>−</button>
+                  <span aria-live="polite" key={count} className="tick">{count}</span>
+                  <button type="button" aria-label="One more" disabled={count >= seats} onClick={() => setCount(count + 1)}>+</button>
+                </div>
+              </div>
+              <p className="hint">You have {seats} seats. We can’t add more.</p>
+            </>
+          )}
+          <p className="fixed">{pick.name}</p>
+          {Array.from({ length: count - 1 }, (_, i) => (
+            <div className="field" key={i}>
+              <label htmlFor={`guest-${i + 2}`}>Guest {i + 2}</label>
+              <input
+                id={`guest-${i + 2}`}
+                type="text"
+                placeholder="A first name is fine"
+                value={names[i] ?? ''}
+                onChange={(e) => {
+                  const next = [...names]
+                  next[i] = e.target.value
+                  setNames(next)
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className={yes ? 'reply-part reply-rule' : 'reply-part'}>
+        <label htmlFor="note" className="reply-q">A note for us <span className="muted">(optional)</span></label>
+        <textarea id="note" rows={3} placeholder="Food allergies, a song you love, or just a kind word" value={note} onChange={(e) => setNote(e.target.value)} />
+      </div>
+
       {err}
-      <button type="button" className="btn" onClick={send} disabled={sending}>
-        {sending ? 'Sending…' : 'Send our reply'}
+      <button type="button" className="btn" onClick={send} disabled={sending} aria-busy={sending}>
+        {sending && <span className="spinner" aria-hidden="true" />}
+        {sending ? 'Sending…' : 'Send my reply'}
       </button>
-      <p className="hint">Kindly reply on or before {WEDDING.replyBy}.</p>
     </div>
   )
 }
