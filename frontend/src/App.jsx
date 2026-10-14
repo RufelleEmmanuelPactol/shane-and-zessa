@@ -13,7 +13,7 @@ import { asset, mapUrl, MUSIC_URL, WEDDING } from './wedding.js'
 // how long the cover takes to drift away; keep in step with .cover.is-leaving in index.css
 const OPEN_MS = 1400
 
-const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']
+const WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
 // Fades sections in as they scroll into view.
@@ -115,7 +115,7 @@ function Stitch() {
 function Calendar({ iso }) {
   // Use the wedding's own calendar date, not the viewer's timezone.
   const [y, m, day] = iso.slice(0, 10).split('-').map(Number)
-  const first = (new Date(Date.UTC(y, m - 1, 1)).getUTCDay() + 6) % 7 // Monday-first
+  const first = new Date(Date.UTC(y, m - 1, 1)).getUTCDay() // Sunday-first: Sunday is the first day of the week
   const days = new Date(Date.UTC(y, m, 0)).getUTCDate()
   const cells = [...Array(first).fill(null), ...Array.from({ length: days }, (_, i) => i + 1)]
 
