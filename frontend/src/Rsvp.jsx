@@ -251,7 +251,7 @@ function Flow({ onPage }) {
               type="search"
               autoComplete="off"
               enterKeyHint="search"
-              placeholder="e.g. Rhian"
+              placeholder="e.g. Juan De La Cruz"
               value={query}
               onChange={(e) => {
                 setQuery(e.target.value)
