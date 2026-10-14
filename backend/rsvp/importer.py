@@ -5,12 +5,32 @@ not in the file are left alone, so RSVPs never lose their party.
 """
 import csv
 import io
+import re
 
 from django.db import transaction
 
 from .models import Guest, Party
 
 SPONSOR_ROLES = {'principal sponsor'}
+# Ranks, degrees and suffixes that stay in capitals.
+CAPITALS = {'FSINSP', 'FCINSP', 'FSUPT', 'SFO1', 'RN', 'J.D.', 'II', 'III', 'IV'}
+# Particles left lowercase when typed that way ("Husband ni Lita", "de la Cruz").
+PARTICLES = {'ni', 'de', 'del', 'la', 'y'}
+
+
+def title_name(name):
+    """Title-case words typed in all capitals or all lowercase ("FSUPT RICHARD
+    TIMOSA", "pactol"); mixed-case words like "Bulay-og" or "Ma.Rhiza" are kept."""
+    def fix(word):
+        core = word.strip(',')
+        if core.upper() in CAPITALS:
+            return word.upper()
+        if core in PARTICLES:
+            return word
+        if core.isupper() or core.islower():
+            return re.sub(r'[^\W\d_]+', lambda m: m[0].capitalize(), word)
+        return word
+    return ' '.join(fix(w) for w in name.split())
 
 
 class GuestListError(ValueError):
@@ -51,7 +71,7 @@ def import_guests(text):
         Guest.objects.bulk_create(
             Guest(
                 party=party,
-                name=r['name'],
+                name=title_name(r['name']),
                 role=r.get('role', ''),
                 sponsor=r.get('role', '').lower() in SPONSOR_ROLES,
                 searchable=r.get('searchable', 'yes').lower() not in ('no', 'false', '0'),

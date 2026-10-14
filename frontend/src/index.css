@@ -33,15 +33,24 @@ body {
   font-family: var(--serif);
   font-size: 20px;
   line-height: 1.45;
-  -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
 
 #root { max-width: 520px; margin: 0 auto; background: var(--page); }
 
+/* the S & Z monogram: a mask painted in the current text colour */
+.monogram {
+  display: block;
+  background: currentColor;
+  -webkit-mask: url('./assets/monogram.webp') center / contain no-repeat;
+  mask: url('./assets/monogram.webp') center / contain no-repeat;
+}
+
 img { display: block; max-width: 100%; }
 h1, h2, h3, p { margin: 0; }
 button, input, textarea { font: inherit; color: inherit; }
+/* the canvas leaves buttons at the browser's own line height */
+button { line-height: normal; }
 a { color: var(--maroon); }
 
 :focus-visible { outline: 2px solid var(--maroon); outline-offset: 3px; }
@@ -132,17 +141,14 @@ html { -webkit-tap-highlight-color: transparent; }
   padding: 0;
   border-radius: 50%;
   border: 1px solid rgba(246, 238, 227, 0.6);
-  background: rgba(43, 20, 16, 0.45);
+  background: rgba(43, 20, 16, 0.35);
   color: var(--cream);
   cursor: pointer;
-  -webkit-backdrop-filter: blur(4px);
-  backdrop-filter: blur(4px);
 }
 .music svg { width: 20px; height: 20px; }
 .music { animation: rise 0.6s var(--ease-out) 1.4s both; }
 
-/* cover: the photo, script and cut-out live on one 3:2 stage sized to the
-   screen height; numbers below come from the 390×844 design */
+/* cover: laid out in px exactly as the 390×844 canvas board */
 /* the cover is a full-screen layer over the page until "Open the invitation" */
 html.is-sealed, html.is-sealed body { overflow: hidden; overscroll-behavior: none; }
 /* Safari 26 fills the strip behind the clock with the page colour, so while
@@ -161,6 +167,7 @@ html.is-sealed, html.is-sealed body { background: var(--cover-top); }
   max-width: 520px;
   margin: 0 auto;
   color: var(--cream);
+  line-height: normal;
   touch-action: none;
 }
 /* the dark fade at the bottom carries on below the cover, under the toolbar */
@@ -173,33 +180,20 @@ html.is-sealed, html.is-sealed body { background: var(--cover-top); }
   height: 100vh;
   background: var(--cover-foot);
 }
-.cover-letter { position: absolute; inset: 0; }
 .cover-card {
   position: absolute;
   inset: 0;
-  z-index: 2;
   overflow: hidden;
-  background: var(--cover-top);
-  container-type: size;
+  background: #2b2a1e;
 }
-/* the photo melts into the green strip behind the clock */
-.cover-card::after {
-  content: '';
+.cover-bg {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 140px;
-  z-index: 1;
-  background: linear-gradient(var(--cover-top), rgba(47, 62, 45, 0));
-  pointer-events: none;
-}
-.cover-stage {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 150cqh;
-  left: calc((100cqw - 150cqh) * 0.44);
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  object-position: 44% 50%;
 }
 .cover-photo {
   position: absolute;
@@ -212,11 +206,11 @@ html.is-sealed, html.is-sealed body { background: var(--cover-top); }
 .cover-cutout { pointer-events: none; }
 
 /* cover entrance: the photo settles, then the words, then the details */
-.cover-stage { transform: scale(1.06); opacity: 0; transition: transform 1.8s var(--ease-out), opacity 1s ease; }
+.cover-bg { transform: scale(1.06); opacity: 0; transition: transform 1.8s var(--ease-out), opacity 1s ease; }
 .cover-script span { opacity: 0; filter: blur(6px); transform: translateY(10px); transition: opacity 1s ease, filter 1s ease, transform 1.2s var(--ease-out); }
 .cover-names { opacity: 0; transform: translateY(8px); transition: opacity 0.9s ease 0.9s, transform 0.9s var(--ease-out) 0.9s; }
 .cover-bar { transform: translateY(100%); transition: transform 0.9s var(--ease-out) 1.1s; }
-.cover.is-in .cover-stage { transform: none; opacity: 1; }
+.cover.is-in .cover-bg { transform: none; opacity: 1; }
 .cover.is-in .cover-script span { opacity: 1; filter: none; transform: none; }
 .cover.is-in .cover-script span:nth-child(1) { transition-delay: 0.35s; }
 .cover.is-in .cover-script span:nth-child(2) { transition-delay: 0.55s; }
@@ -229,7 +223,7 @@ html.is-sealed, html.is-sealed body { background: var(--cover-top); }
 .cover.is-leaving { opacity: 0; transition: opacity 0.9s ease 0.45s; pointer-events: none; }
 .cover.is-leaving .cover-bar { transform: translateY(100%); transition: transform 0.6s var(--ease-out); }
 .cover.is-leaving .cover-names { opacity: 0; transform: translateY(-8px); transition: opacity 0.5s ease, transform 0.6s var(--ease-out); }
-.cover.is-leaving .cover-stage { transform: scale(1.12); transition: transform 1.4s var(--ease-out); }
+.cover.is-leaving .cover-bg { transform: scale(1.12); transition: transform 1.4s var(--ease-out); }
 .cover.is-leaving .cover-script span { opacity: 0; filter: blur(8px); transform: translateY(-18px); transition: opacity 0.6s ease, filter 0.6s ease, transform 0.8s var(--ease-out); }
 .cover.is-leaving .cover-script span:nth-child(1) { transition-delay: 0s; }
 .cover.is-leaving .cover-script span:nth-child(2) { transition-delay: 0.08s; }
@@ -250,23 +244,21 @@ main.is-sealed .invite-panel > .stitch { transform: none; }
 
 .cover-script {
   position: absolute;
-  top: 8.29cqh;
-  /* keep "Our" on screen on tall, narrow phones */
-  left: max(45.66cqh, calc((150cqh - 100cqw) * 0.44));
-  width: 46.21cqh;
+  top: 70px;
+  left: 0;
+  right: 0;
   font-family: 'Mrs Saint Delafield', cursive;
   font-weight: 400;
-  font-size: 11.85cqh;
+  font-size: 100px;
   line-height: 0.8;
-  white-space: nowrap;
   color: var(--blush);
   transform: rotate(-7deg);
   text-shadow: 0 2px 18px rgba(30, 10, 10, 0.45);
 }
 .cover-script span { display: block; }
-.cover-script span:nth-child(1) { padding-left: 1.42cqh; }
-.cover-script span:nth-child(2) { padding-left: 17.77cqh; }
-.cover-script span:nth-child(3) { padding-left: 29.62cqh; }
+.cover-script span:nth-child(1) { position: relative; top: 26px; padding-left: 12px; }
+.cover-script span:nth-child(2) { padding-left: 150px; }
+.cover-script span:nth-child(3) { padding-left: 250px; }
 
 .cover-names {
   position: absolute;
@@ -279,7 +271,6 @@ main.is-sealed .invite-panel > .stitch { transform: none; }
   font-weight: 500;
   letter-spacing: 0.2em;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
-  z-index: 2;
 }
 
 
@@ -291,27 +282,24 @@ main.is-sealed .invite-panel > .stitch { transform: none; }
   display: flex;
   align-items: center;
   gap: 14px;
-  z-index: 2;
-  padding: 120px 20px max(32px, env(safe-area-inset-bottom));
-  /* the cover runs under Safari's toolbar (100lvh), so lift the button above
-     it: 100lvh - 100svh is however tall the toolbar is in this layout */
-  padding-bottom: calc(100lvh - 100svh + 20px);
+  padding: 120px 20px 100px;
   /* see-through: the photo darkens toward the bottom so the button reads */
   background: linear-gradient(rgba(29, 22, 19, 0), rgba(29, 22, 19, 0.55) 45%, var(--cover-foot));
 }
-.cover-bar img { width: 56px; height: 56px; flex: none; }
+.cover-bar .monogram { width: 56px; height: 56px; flex: none; color: var(--champagne); }
 .cover-open {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  /* a link in the canvas, so its border sits outside the 56px */
+  box-sizing: content-box;
   min-height: 56px;
   padding: 0 22px;
   border: 1.5px solid rgba(232, 211, 180, 0.7);
   border-radius: 999px;
   background: none;
   color: var(--cream);
-  font: inherit;
   font-size: 20px;
   font-weight: 500;
   text-decoration: none;
@@ -338,7 +326,8 @@ main.is-sealed .invite-panel > .stitch { transform: none; }
 .names span { font-family: var(--script-names); font-style: normal; font-size: 1.1em; color: var(--rose); padding: 0 0.05em; }
 .invite-names { margin-bottom: 16px; font-size: 38px; line-height: 1.15; }
 .invite-names span { color: var(--champagne); }
-.finale-names { display: inline-block; margin-top: 6px; font-size: 28px; color: var(--maroon); }
+.finale-names { display: inline-block; margin-top: 10px; font-family: var(--script); font-size: 46px; line-height: 1.15; color: var(--blush); }
+.finale-names span { color: var(--champagne); }
 .stitch { position: absolute; right: -30px; bottom: -20px; width: 250px; height: 416px; }
 
 /* sections over paintings */
@@ -376,49 +365,42 @@ main.is-sealed .invite-panel > .stitch { transform: none; }
 }
 .cal-day.is-day { font-weight: 700; color: var(--maroon); }
 
-.day { padding: 56px 24px 52px; color: var(--cream); }
-.day .painting { object-position: 30% 50%; }
-.day::before { background: var(--burgundy); opacity: 0.72; }
-.day .rule { color: var(--champagne); }
-.day .label { margin-bottom: 6px; color: var(--champagne); }
-.day .title { color: var(--cream); margin-bottom: 20px; }
+/* the canvas boards set no line height, so these sections use the font's own */
+.day, .venues, .attire, .gifts, .finale, .rsvp-head, .day .label, .venues .label, .gifts .label, .rsvp-head .label { line-height: normal; }
 
-/* vertical timeline: an icon on a dashed thread for each moment */
-.timeline { position: relative; list-style: none; margin: 0; padding: 4px 0 0; display: flex; flex-direction: column; gap: 22px; }
-.timeline::before { content: ''; position: absolute; left: 25px; top: 30px; bottom: 26px; border-left: 1.5px dashed rgba(232, 211, 180, 0.6); }
-.timeline li { position: relative; display: flex; align-items: center; gap: 18px; }
-.tl-icon {
-  flex: none;
-  width: 52px;
-  height: 52px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--burgundy);
-  color: var(--champagne);
-  box-shadow: 0 0 0 1px rgba(232, 211, 180, 0.6);
-}
-.tl-icon svg { width: 26px; height: 26px; }
-.timeline li.is-main .tl-icon { background: var(--champagne); color: var(--burgundy); box-shadow: 0 0 0 4px var(--burgundy), 0 0 0 5px rgba(232, 211, 180, 0.7); }
-.tl-text { display: flex; flex-direction: column; gap: 2px; }
-.tl-time { font-size: 15px; font-weight: 500; letter-spacing: 0.14em; color: var(--champagne); }
-.tl-title { font-size: 21px; font-weight: 500; line-height: 1.25; }
-.timeline-close { margin-top: 28px; font-style: italic; color: var(--champagne); }
+.day { padding: 52px 24px 44px; text-align: center; }
+.day .label { margin-bottom: 6px; color: var(--maroon); }
+.day .day-date { margin: 10px 0 22px; color: var(--ink); }
 
-/* venues: one card each, with directions on their own line */
-.venues { display: flex; flex-direction: column; gap: 12px; margin-top: 32px; padding-top: 28px; border-top: 1px dashed rgba(230, 210, 176, 0.45); }
-.venues .label { margin-bottom: 4px; }
+/* the pencil line and sketches are one drawing; each moment sits beside its sketch */
+.timeline { position: relative; width: min(342px, 100%); margin: 0 auto; aspect-ratio: 342 / 1060; text-align: left; }
+.timeline-sketch { position: absolute; inset: 0; width: 100%; height: 100%; }
+.timeline ol { list-style: none; margin: 0; padding: 0; }
+.timeline li { position: absolute; top: var(--top); left: 58.5%; right: -16px; display: flex; flex-direction: column; gap: 2px; }
+.timeline li.is-left { left: -16px; right: 58.5%; text-align: right; }
+.tl-time { font-size: 12px; font-weight: 500; letter-spacing: 0.16em; color: var(--maroon); }
+.tl-title { font-size: 22px; line-height: 1.15; }
+.tl-note { margin-top: 3px; font-size: 14px; line-height: 1.35; color: var(--ink-soft); }
+.timeline-close { margin-top: 26px; font-size: 20px; font-style: italic; color: var(--maroon); }
+
+/* venues: one card each, with directions on their own line, over a painting */
+.venues { padding: 48px 24px 52px; color: var(--cream); }
+.venues .painting { object-position: 30% 50%; }
+.venues::before { background: var(--burgundy); opacity: 0.72; }
+.venues-inner { display: flex; flex-direction: column; gap: 12px; }
+.venues .label { margin-bottom: 4px; color: var(--champagne); }
 .venue { display: flex; flex-direction: column; gap: 16px; padding: 18px 16px 16px; border-radius: 16px; background: var(--cream); color: var(--ink); }
 .venue-head { display: flex; align-items: center; gap: 14px; }
+.venue-head > span:last-child { display: flex; flex-direction: column; gap: 2px; }
 .venue-icon { flex: none; width: 52px; height: 52px; display: grid; place-items: center; border-radius: 50%; background: var(--burgundy); color: var(--champagne); }
 .venue-icon svg { width: 26px; height: 26px; }
-.venue-label { display: block; font-size: 13px; font-weight: 500; letter-spacing: 0.12em; white-space: nowrap; color: var(--maroon); }
-.venue-name { display: block; margin-top: 2px; font-size: 21px; font-weight: 500; line-height: 1.25; }
-.venue-go { min-height: 48px; font-size: 18px; }
+.venue-label { display: block; font-size: 13px; font-weight: 500; letter-spacing: 0.16em; color: var(--maroon); }
+.venue-name { display: block; font-size: 21px; font-weight: 500; line-height: 1.25; }
+.venue-go { min-height: 48px; gap: 8px; font-size: 18px; }
 .venue-dark { border: 1px solid rgba(232, 211, 180, 0.55); background: rgba(43, 10, 18, 0.35); color: var(--cream); }
 .venue-dark .venue-icon { background: none; border: 1px solid rgba(232, 211, 180, 0.6); }
 .venue-dark .venue-label { color: var(--champagne); }
-.venue-dark .venue-go { background: none; border: 1.5px solid var(--champagne); color: var(--cream); }
+.venue-dark .venue-go { box-sizing: content-box; width: auto; min-height: 48px; padding: 0; background: none; border: 1.5px solid var(--champagne); color: var(--cream); }
 
 /* dress code: its own title, the painted collage, then the cards on a garden painting */
 .attire { padding: 52px 24px 40px; color: var(--maroon); }
@@ -446,7 +428,7 @@ main.is-sealed .invite-panel > .stitch { transform: none; }
 }
 /* the pictures sit above the lace edge; the lace band then covers the feet */
 .collage-print, .collage-oval, .collage-couple { z-index: 2; }
-.collage-print { position: absolute; padding: 6px; background: #fbf6ef; }
+.collage-print { position: absolute; box-sizing: content-box; padding: 6px; background: #fbf6ef; }
 .collage-print img { width: 100%; height: 100%; object-fit: cover; }
 .collage-giverny { right: 18px; top: 0; width: 132px; height: 104px; transform: rotate(5deg); }
 /* the small print overlaps the top of the lace band */
@@ -519,24 +501,16 @@ main.is-sealed .invite-panel > .stitch { transform: none; }
 
 /* gift preference */
 .gifts { padding: 56px 28px 52px; text-align: center; }
-.gifts-rose { display: block; width: 120px; height: 20px; margin: 0 auto 18px; }
+.gifts-box { width: 170px; height: 170px; margin: -12px auto 14px; }
 .gifts .label { margin-bottom: 6px; color: var(--maroon); }
-.gifts-blessed { margin: 0 -12px; font-size: 13px; font-weight: 500; letter-spacing: 0.16em; line-height: 1.6; color: var(--ink-soft); }
-.gifts-request { margin-top: 18px; font-family: var(--script); font-size: 36px; line-height: 1.2; color: var(--maroon); }
-.gifts-body { margin-top: 18px; font-size: 18px; line-height: 1.55; }
+.gifts-verse { margin-top: 22px; text-align: left; font-size: 19px; line-height: 1.6; color: var(--chocolate); }
+.gifts-verse p + p { margin-top: 18px; }
+.gifts-verse .gifts-sign { margin-top: 24px; }
+.gifts-verse .gifts-names { margin-top: 2px; font-family: var(--script); font-size: 34px; line-height: 1.2; color: var(--burgundy); }
 
-
-/* floating words */
-.words { position: relative; height: 580px; overflow: hidden; }
-.words img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
-.words span {
-  position: absolute;
-  font-size: 13px;
-  line-height: 1.25;
-  color: #fbf7ef;
-  text-align: center;
-  text-shadow: 0 1px 8px rgba(20, 20, 10, 0.75);
-}
+/* night photo between the dress code and the reply */
+.lanterns { height: 580px; overflow: hidden; }
+.lanterns img { width: 100%; height: 100%; object-fit: cover; object-position: 52% 50%; }
 
 /* reply */
 .rsvp { padding: 44px 24px 48px; scroll-margin-top: 0; }
@@ -553,7 +527,7 @@ main.is-sealed .invite-panel > .stitch { transform: none; }
 .rsvp-lead { margin-top: 10px; font-size: 19px; line-height: 1.45; }
 .rsvp-lead strong { font-weight: 600; color: var(--burgundy); }
 .rsvp-note { margin-top: 14px; font-size: 17px; line-height: 1.5; color: var(--ink-soft); }
-.reply-by .rsvp-note { margin-top: 0; }
+.reply-by .rsvp-note { margin-top: 0; color: #5a463d; }
 .rsvp-rule-title { display: block; margin-bottom: 2px; font-size: 13px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--maroon); }
 
 .reply-shell {
@@ -571,6 +545,7 @@ main.is-sealed .invite-panel > .stitch { transform: none; }
   scroll-margin-top: 16px;
 }
 .reply-part { display: flex; flex-direction: column; gap: 10px; }
+.reply-part.is-guests { gap: 14px; }
 .reply-rule { padding-top: 22px; border-top: 1px solid #e2d6c2; }
 .reply-q { font-size: 22px; font-weight: 500; }
 .reply-q:focus, .recap p:focus { outline: none; }
@@ -607,7 +582,7 @@ main.is-sealed .invite-panel > .stitch { transform: none; }
 .flow-title:focus { outline: none; }
 .body { font-size: 20px; line-height: 1.45; }
 .body.small { font-size: 17px; text-align: center; }
-.hint { margin-top: -6px; font-size: 16px; color: var(--ink-soft); }
+.hint { margin-top: -8px; font-size: 16px; color: var(--ink-soft); }
 
 .back { width: 44px; height: 44px; margin-left: -10px; display: grid; place-items: center; padding: 0; border: 0; background: none; color: var(--maroon); cursor: pointer; }
 .back svg { width: 24px; height: 24px; }
@@ -686,13 +661,15 @@ input[type='search']::-webkit-search-cancel-button { -webkit-appearance: none; }
 .choice.is-on .dot::after { transform: none; }
 
 .field { display: flex; flex-direction: column; gap: 6px; }
+/* the canvas's name fields keep their border outside the 52px */
+.field input[type='text'] { box-sizing: content-box; width: auto; }
 .field label, .field-label { font-size: 17px; font-weight: 500; }
 .fixed { height: 52px; display: flex; align-items: center; padding: 0 14px; border-radius: 10px; background: var(--page); }
 
 .stepper { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .stepper > span { font-size: 18px; }
 .stepper [role='group'] { display: flex; align-items: center; gap: 4px; }
-.stepper [role='group'] > span { min-width: 36px; text-align: center; font-size: 22px; font-weight: 500; }
+.stepper [role='group'] > span { min-width: 32px; text-align: center; font-size: 22px; font-weight: 500; }
 .stepper button {
   width: 44px;
   height: 44px;
@@ -700,26 +677,29 @@ input[type='search']::-webkit-search-cancel-button { -webkit-appearance: none; }
   border-radius: 50%;
   border: 1px solid var(--line);
   background: var(--field);
+  /* the canvas never set a font here, so these drew in the browser's Arial */
+  font-family: Arial, sans-serif;
   font-size: 22px;
-  line-height: 1;
   cursor: pointer;
 }
-.stepper button:disabled { border-color: #e2d6c2; background: var(--cream); color: #b8a99a; cursor: default; }
+.stepper button:disabled { cursor: default; }
 
 .kids { padding: 14px 16px; border-radius: 10px; border: 1px solid var(--line); font-size: 17px; line-height: 1.45; color: #5a463d; }
 .kids-title { margin-bottom: 4px; font-size: 13px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--maroon); }
 
 .summary { display: flex; flex-direction: column; gap: 6px; padding: 16px; border-radius: 12px; background: var(--page); }
-.summary .label { color: var(--ink-soft); }
+.summary .label { line-height: 1.45; color: var(--ink-soft); }
 .summary-text { font-size: 19px; white-space: pre-line; }
 .summary .link { align-self: flex-start; padding: 0; }
 
 .form-error { padding: 12px 14px; border-radius: 10px; background: #f3e3e0; color: var(--maroon); font-size: 17px; }
 
-.thanks { align-items: center; text-align: center; padding-top: 28px; }
-.thanks-seal { width: 80px; height: 80px; animation: seal 0.7s var(--spring) 0.1s both; }
+.thanks { align-items: center; gap: 14px; text-align: center; }
+.thanks-seal { width: 80px; height: 80px; color: var(--maroon); animation: seal 0.7s var(--spring) 0.1s both; }
 @keyframes seal { from { opacity: 0; transform: scale(1.25) rotate(-8deg); } }
 .thanks .summary { width: 100%; text-align: center; }
+/* the canvas's outlined links (not buttons) keep their border outside the height */
+.reply-part > .btn-line { box-sizing: content-box; width: auto; min-height: 52px; padding: 0; font-size: 19px; }
 
 /* farewell */
 .finale {
@@ -753,7 +733,7 @@ input[type='search']::-webkit-search-cancel-button { -webkit-appearance: none; }
 }
 .cd-num { font-size: 32px; line-height: 1; font-variant-numeric: tabular-nums; }
 .cd-label { font-size: 15px; color: var(--champagne); }
-.seal-foot { width: 72px; height: 72px; margin: 32px auto 14px; }
+.seal-foot { width: 72px; height: 72px; margin: 32px auto 14px; color: var(--champagne); }
 
 /* phone-only gate: the cover photo beside a note with a QR code */
 /* the gate is for laptops and tablets, so it uses the whole window */
@@ -796,7 +776,7 @@ input[type='search']::-webkit-search-cancel-button { -webkit-appearance: none; }
 .gate-date span { flex: 1; height: 1px; background: rgba(246, 239, 226, 0.7); }
 .gate-panel { flex: 1 1 440px; display: flex; align-items: center; justify-content: center; padding: 56px 40px; background: var(--cream); }
 .gate-card { width: 100%; max-width: 440px; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; }
-.gate-crest { width: 72px; height: 72px; }
+.gate-crest { width: 72px; height: 72px; color: var(--maroon); }
 /* names in italic serif so they read at a glance; only the ampersand is script */
 .gate-names { font-size: 52px; line-height: 1.1; color: var(--maroon); }
 .gate .rule { width: 64px; margin: 0; color: var(--maroon); }

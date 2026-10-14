@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { asset, CONTACT_URL } from './wedding.js'
+import { CONTACT_URL } from './wedding.js'
 import { addToCalendar } from './ics.js'
-import { ArrowRight, CalendarIcon, ChevronLeft, MessageIcon, SearchIcon } from './icons.jsx'
+import { ArrowRight, CalendarIcon, ChevronLeft, MessageIcon, Monogram, SearchIcon } from './icons.jsx'
 
 // Replies are saved by the Django backend (POST /api/rsvp/). A copy is kept on
 // the guest's phone so they see their reply when they come back.
@@ -217,7 +217,7 @@ function Flow({ onPage }) {
     const came = saved.attending === 'yes'
     return (
       <div className="reply-card thanks" ref={card} key={page} data-dir={dir}>
-        <img className="thanks-seal" src={asset('photos/crest.webp')} width="320" height="320" alt="" />
+        <Monogram className="thanks-seal" />
         <h3 className="flow-title" tabIndex={-1} data-focus>Thank you, {saved.name}</h3>
         <p className="body">
           {came ? 'We’re so happy you’ll be there. See you on the 29th!' : 'We’ll miss you, and we’re grateful you let us know.'}
@@ -354,7 +354,7 @@ function Flow({ onPage }) {
       </div>
 
       {yes && (
-        <div className="reply-part">
+        <div className="reply-part is-guests">
           <p className="reply-q">Who’s coming?</p>
           {pick.sponsor && (
             <div className="field">

@@ -3,10 +3,13 @@ import Gate, { useGate } from './Gate.jsx'
 import Music from './Music.jsx'
 import Rsvp from './Rsvp.jsx'
 import { addToCalendar } from './ics.js'
-import { ArrowRight, CalendarIcon, DAY_ICONS, PinIcon } from './icons.jsx'
+import { ArrowRight, CalendarIcon, Monogram, PinIcon, VENUE_ICONS } from './icons.jsx'
 import barongImg from './assets/attire-barong.webp'
 import filipinianaImg from './assets/attire-filipiniana.webp'
 import guestsImg from './assets/attire-guests.webp'
+import timelineSketch from './assets/day-timeline.webp'
+import lanternsImg from './assets/lanterns.webp'
+import giftBoxImg from './assets/gift-box.webp'
 import { asset, mapUrl, MUSIC_URL, WEDDING } from './wedding.js'
 
 
@@ -49,27 +52,21 @@ function Cover({ onOpen, leaving }) {
 
   return (
     <header className={`cover${ready ? ' is-in' : ''}${leaving ? ' is-leaving' : ''}`} inert={leaving || undefined}>
-      <div className="cover-letter">
-        <div className="cover-card">
-          {/* The photo, the script and the cut-out couple share one stage, so the
-              words sit behind the couple at the same spot on every screen size. */}
-          <div className="cover-stage">
-            <img ref={photo} onLoad={() => setReady(true)} onError={() => setReady(true)} className="cover-photo" src={asset('web/cover-guitar.webp')} width="3000" height="2000" fetchPriority="high"
-              alt="Shane playing guitar while Zessa, in a burgundy dress, leans on a branch and smiles at him" />
-            <h1 className="cover-script">
-              <span>Our</span>
-              <span>wedding</span>
-              <span>day</span>
-            </h1>
-            <img className="cover-photo cover-cutout" src={asset('web/cover-cutout.webp')} width="3000" height="2000" alt="" />
-          </div>
+      <div className="cover-card">
+        <img ref={photo} onLoad={() => setReady(true)} onError={() => setReady(true)} className="cover-bg" src={asset('web/cover-guitar.webp')} width="3000" height="2000" fetchPriority="high"
+          alt="Shane playing guitar while Zessa, in a burgundy dress, leans on a branch and smiles at him" />
 
-          <p className="cover-names" aria-label="Shane and Zessa"><span>SHANE</span><span>ZESSA</span></p>
+        <p className="cover-names" aria-label="Shane and Zessa"><span>SHANE</span><span>ZESSA</span></p>
 
-          <div className="cover-bar">
-            <img src={asset('photos/crest.webp')} width="320" height="320" alt="" />
-            <button type="button" className="cover-open" onClick={onOpen}>Open the invitation <ArrowRight /></button>
-          </div>
+        <h1 className="cover-script">
+          <span>Our</span>
+          <span>wedding</span>
+          <span>day</span>
+        </h1>
+
+        <div className="cover-bar">
+          <Monogram />
+          <button type="button" className="cover-open" onClick={onOpen}>Open the invitation <ArrowRight /></button>
         </div>
       </div>
     </header>
@@ -165,16 +162,6 @@ function Countdown({ iso }) {
   )
 }
 
-const WORDS = [
-  ['just<br>us', { top: '7%', left: '38%' }],
-  ['golden<br>hour', { top: '16%', left: '6%' }],
-  ['long dinners', { top: '13%', right: '7%' }],
-  ['happy tears', { top: '36%', left: '5%' }],
-  ['your favorite<br>song', { top: '43%', right: '5%' }],
-  ['candlelight', { top: '66%', left: '7%' }],
-  ['forever<br>starts here', { top: '71%', right: '8%' }],
-]
-
 export default function App() {
   const gate = useGate()
   // sealed → opening (the cover drifts away over the invitation) → open
@@ -246,30 +233,35 @@ export default function App() {
           </div>
         </section>
 
-        <section className="day painted">
-          <img className="painting" src={asset('web/corot-souvenir-mortefontaine.webp')} width="1475" height="1735" loading="lazy" alt="" />
-          <span className="rule" />
+        <section className="day">
           <p className="label">WEDDING DAY TIMELINE</p>
           <h2 className="title reveal">The day</h2>
-          <ol className="timeline">
-            {WEDDING.day.map(({ time, title, icon, main }, i) => (
-              <li key={title} className={main ? 'reveal is-main' : 'reveal'} style={{ '--d': `${i * 80}ms` }}>
-                <span className="tl-icon">{DAY_ICONS[icon]}</span>
-                <span className="tl-text">
+          <p className="label day-date">{WEDDING.dayLine}</p>
+          {/* a pencil line winds down the middle; each moment sits beside its sketch */}
+          <div className="timeline">
+            {/* rendered from design/web/day-timeline.svg: its pencil filter isn't reliable in every browser */}
+            <img className="timeline-sketch" src={timelineSketch} width="1026" height="3180" loading="lazy" alt="" />
+            <ol>
+              {WEDDING.day.map(({ time, title, note }, i) => (
+                <li key={title} className={i % 2 ? 'reveal is-left' : 'reveal'} style={{ '--top': `${((88 + 150 * i) / 1060) * 100}%` }}>
                   <span className="tl-time">{time}</span>
                   <span className="tl-title">{title}</span>
-                </span>
-              </li>
-            ))}
-          </ol>
+                  <span className="tl-note">{note}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
           <p className="timeline-close reveal">We look forward to celebrating with you!</p>
+        </section>
 
-          <div className="venues">
+        <section className="venues painted">
+          <img className="painting" src={asset('web/corot-souvenir-mortefontaine.webp')} width="1475" height="1735" loading="lazy" alt="" />
+          <div className="venues-inner">
             <p className="label">WHERE TO FIND US</p>
             {[[WEDDING.ceremony, 'chapel', ''], [WEDDING.reception, 'sprig', ' venue-dark']].map(([venue, icon, tone]) => (
               <div key={venue.name} className={`venue reveal${tone}`}>
                 <div className="venue-head">
-                  <span className="venue-icon">{DAY_ICONS[icon]}</span>
+                  <span className="venue-icon">{VENUE_ICONS[icon]}</span>
                   <span>
                     <span className="venue-label">{venue.label}</span>
                     <span className="venue-name">{venue.name}</span>
@@ -335,7 +327,7 @@ export default function App() {
 
               <div className="attire-card reveal">
                 <p className="attire-who">For our guests</p>
-                <img className="attire-single" src={guestsImg} width="800" height="800" loading="lazy" alt="Drawing of a semi-formal midi dress beside a suit" />
+                <img className="attire-single" src={guestsImg} width="800" height="800" loading="lazy" alt="Drawing of a long-sleeved midi dress beside a long-sleeve shirt and trousers" />
                 <p className="attire-what">Semi-formal attire</p>
                 <p className="attire-detail">in burgundy &amp; champagne</p>
                 <ul className="swatches" aria-label="Our colour palette">
@@ -349,12 +341,9 @@ export default function App() {
           </div>
         </section>
 
-        <section className="words" aria-label="Just us, golden hour, long dinners, happy tears, your favorite song, candlelight, forever starts here">
-          <img src={asset('web/field-holding-hands.webp')} width="1800" height="2400" loading="lazy"
-            alt="Zessa and Shane holding hands in a field, both in white shirts and jeans" />
-          {WORDS.map(([html, pos]) => (
-            <span key={html} style={pos} aria-hidden="true" dangerouslySetInnerHTML={{ __html: html }} />
-          ))}
+        <section className="lanterns">
+          <img src={lanternsImg} width="1800" height="1200" loading="lazy"
+            alt="Zessa and Shane at the water’s edge at night, each holding up a lantern" />
         </section>
 
         <section className="rsvp painted" id="rsvp">
@@ -377,18 +366,15 @@ export default function App() {
         </section>
 
         <section className="gifts">
-          <svg className="gifts-rose" viewBox="0 0 120 20" aria-hidden="true">
-            <path d="M4 10H46M74 10H116" stroke="#c9a96e" strokeWidth="1.2" fill="none" strokeLinecap="round" />
-            <g transform="translate(60 10)" fill="#c48a78">
-              {[0, 72, 144, 216, 288].map((r) => <circle key={r} cx="0" cy="-4.5" r="3.5" transform={`rotate(${r})`} />)}
-              <circle r="2.4" fill="#8b1e35" />
-            </g>
-          </svg>
+          <img className="gifts-box" src={giftBoxImg} width="640" height="640" loading="lazy"
+            alt="A sketch of a gift box tied with a Victorian ribbon bow and a sprig of roses" />
           <p className="label">GIFT PREFERENCE</p>
-          <p className="gifts-blessed">BY THE GRACE OF GOD, WE’VE BEEN TRULY BLESSED.</p>
-          <p className="gifts-request">Your presence and prayers are all we request.</p>
-          <p className="gifts-body">Should you wish to give us a gift, in lieu of material items, a monetary gift would be most appreciated. Your generosity will help us as we begin building our life together and plan for our future as husband and wife.</p>
-          <p className="gifts-body muted"><em>Above all, we are grateful to celebrate this milestone with you.</em></p>
+          <div className="gifts-verse">
+            <p>By the grace of God, we’ve been truly blessed,<br />Your love and prayers mean more than the rest.</p>
+            <p>As we start our life together, with love all around,<br />A monetary gift would help us build our dreams from the ground.</p>
+            <p className="gifts-sign">With love,</p>
+            <p className="gifts-names">Shane &amp; Zessa</p>
+          </div>
         </section>
       </main>
 
@@ -398,8 +384,8 @@ export default function App() {
         </div>
         <p className="title on-dark">See you soon</p>
         <Countdown iso={WEDDING.start} />
-        <img className="seal-foot" src={asset('photos/crest.webp')} width="320" height="320" alt="" loading="lazy" />
-        <p className="lead">With love and gratitude,<br /><span className="finale-names names">Shane <span>&amp;</span> Zessa</span></p>
+        <Monogram className="seal-foot" />
+        <p className="lead">With love and gratitude,<br /><span className="finale-names">Shane <span>&amp;</span> Zessa</span></p>
       </footer>
     </>
   )

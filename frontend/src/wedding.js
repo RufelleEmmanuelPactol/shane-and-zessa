@@ -15,21 +15,23 @@ export const WEDDING = {
   // into `map` to drop guests on an exact pin; otherwise Maps searches for name + address.
   ceremony: {
     label: 'CHURCH CEREMONY · 2:00 PM',
-    name: 'Sindangan Seventh-day Adventist Pioneer Church',
+    name: 'Sindangan SDA Pioneer Church',
     address: 'Sta. Cruz, Sindangan, Zamboanga del Norte',
     map: 'https://www.google.com/maps/place/Seventh-Day+Adventist+Church+-+Sindangan/@8.2353024,122.9952136,17.23z/data=!4m10!1m2!2m1!1ssindangan+sda!3m6!1s0x325386a2d97d06d3:0xc99e1465870c28ad!8m2!3d8.2362179!4d122.9973609!15sCg1zaW5kYW5nYW4gc2RhkgEcc2V2ZW50aF9kYXlfYWR2ZW50aXN0X2NodXJjaOABAA!16s%2Fg%2F1tg9q6nq',
   },
   reception: { label: 'RECEPTION · 5:30 PM', name: 'Royal Garden', address: 'Sindangan, Zamboanga del Norte', map: '' },
   replyBy: 'November 15, 2026',
-  // `icon` is a key of DAY_ICONS in icons.jsx; `main` marks the highlighted moment
+  // drawn in this order down the pencil timeline (assets/day-timeline.svg),
+  // so keep it to seven moments or redraw the sketch
+  dayLine: 'SUNDAY, NOVEMBER 29',
   day: [
-    { time: '1:30 PM', title: 'Guest arrival & registration', icon: 'guestbook' },
-    { time: '2:00 PM', title: 'Church ceremony', icon: 'rose', main: true },
-    { time: '4:00 PM', title: 'Photo session', icon: 'camera' },
-    { time: '5:30 PM', title: 'Reception & guest arrival (pika-pika)', icon: 'glasses' },
-    { time: '6:30 PM', title: 'Grand entrance of the newlyweds', icon: 'hearts' },
-    { time: '7:00 PM', title: 'Dinner', icon: 'plate' },
-    { time: '9:30 PM', title: 'Send-off', icon: 'car' },
+    { time: '1:30 PM', title: 'Guest arrival', note: 'Registration at the church' },
+    { time: '2:00 PM', title: 'Church ceremony', note: 'Sindangan SDA Pioneer Church' },
+    { time: '4:00 PM', title: 'Pictorials', note: 'Photos with the newlyweds' },
+    { time: '5:30 PM', title: 'Reception', note: 'Guests arrive at Royal Garden for pika-pika' },
+    { time: '6:30 PM', title: 'Grand entrance', note: 'The newlyweds join the party' },
+    { time: '7:00 PM', title: 'Dinner', note: 'Dinner is served' },
+    { time: '9:30 PM', title: 'Send-off', note: 'Goodnight, and thank you' },
   ],
   palette: [
     { name: 'Burgundy', hex: '#621828' },

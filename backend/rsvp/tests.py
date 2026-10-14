@@ -5,7 +5,7 @@ import json
 from django.contrib.auth.models import User
 from django.test import TestCase
 
-from .importer import GuestListError, import_guests
+from .importer import GuestListError, import_guests, title_name
 from .models import Guest, Party, Rsvp
 
 CSV = """party,side,seats,name,role,searchable,check
@@ -36,6 +36,15 @@ class ImportTests(TestCase):
         self.assertEqual([g.name for g in party.guests.all()], ['Lita C Reyes'])
         self.assertEqual(party.rsvps.count(), 1)
         self.assertTrue(Party.objects.filter(code='B001').exists())
+
+    def test_title_cases_names(self):
+        import_guests('party,side,seats,name\nB003,bride,1,FSUPT RICHARD TIMOSA\nB004,bride,1,nornalyn pactol\n')
+        self.assertEqual(sorted(Guest.objects.values_list('name', flat=True)), ['FSUPT Richard Timosa', 'Nornalyn Pactol'])
+        self.assertEqual(title_name('CECILLE D CARINO-ANGELES'), 'Cecille D Carino-Angeles')
+        self.assertEqual(title_name('Michelle T Bulat-ag'), 'Michelle T Bulat-ag')
+        self.assertEqual(title_name('Ma.Rhiza Monteclaro'), 'Ma.Rhiza Monteclaro')
+        self.assertEqual(title_name('Husband ni Lita'), 'Husband ni Lita')
+        self.assertEqual(title_name('JUAN CRUZ II, J.D., RN'), 'Juan Cruz II, J.D., RN')
 
     def test_rejects_bad_rows_without_saving(self):
         with self.assertRaises(GuestListError):

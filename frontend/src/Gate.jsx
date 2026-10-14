@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
 import { asset, WEDDING } from './wedding.js'
+import { Monogram } from './icons.jsx'
 
 // The site is made for phones held upright.
 // - touch screens in landscape (iPad, or a phone turned sideways): ask to rotate
@@ -63,7 +64,7 @@ export default function Gate({ kind }) {
 
       <div className="gate-panel">
         <div className="gate-card">
-          <img className="gate-crest" src={asset('photos/crest.webp')} width="320" height="320" alt="" />
+          <Monogram className="gate-crest" />
           <p className="gate-names names">Shane <span>&amp;</span> Zessa</p>
           <span className="rule" />
           {kind === 'rotate' ? (
