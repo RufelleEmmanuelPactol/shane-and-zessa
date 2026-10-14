@@ -332,7 +332,7 @@ main.is-sealed .invite-panel > .stitch { transform: none; }
   color: var(--cream);
 }
 .invite-panel > :not(.stitch) { position: relative; }
-.invite-blessing { margin-bottom: 8px; font-size: 19px; font-style: italic; color: var(--champagne); }
+.invite-blessing { margin-bottom: 8px; font-size: 20px; }
 /* the couple's names: italic serif with a script ampersand, everywhere */
 .names { font-style: italic; font-weight: 400; letter-spacing: 0.01em; }
 .names span { font-family: var(--script-names); font-style: normal; font-size: 1.1em; color: var(--rose); padding: 0 0.05em; }
