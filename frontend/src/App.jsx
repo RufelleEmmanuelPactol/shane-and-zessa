@@ -8,6 +8,9 @@ import barongImg from './assets/attire-barong.webp'
 import filipinianaImg from './assets/attire-filipiniana.webp'
 import guestsImg from './assets/attire-guests.webp'
 import timelineLine from './assets/timeline/line.webp'
+import paperUrl from './assets/paper.webp'
+import paperPageUrl from './assets/paper-page.webp'
+import monogramUrl from './assets/monogram.webp'
 import churchSketch from './assets/timeline/prop-1.webp'
 import gardenSketch from './assets/timeline/prop-3.webp'
 import lanternsImg from './assets/lanterns.webp'
@@ -107,7 +110,46 @@ function Timeline() {
   )
 }
 
-function Cover({ onOpen, leaving }) {
+// Every picture on the page (and the paper textures and fonts) is fetched and
+// decoded before the invitation shows, so nothing ever appears half-drawn.
+// Gives up waiting after 15s so a slow connection still gets the page.
+function usePreload(active) {
+  const [progress, setProgress] = useState(0)
+  const [done, setDone] = useState(false)
+  useEffect(() => {
+    if (!active) return
+    const imgs = [...document.querySelectorAll('img')]
+    // load them now rather than when scrolled to (same elements, so nothing downloads twice)
+    imgs.forEach((img) => { img.loading = 'eager' })
+    const extras = [paperUrl, paperPageUrl, monogramUrl].map((src) => {
+      const img = new Image()
+      img.src = src
+      return img
+    })
+    const jobs = [...imgs, ...extras].map((img) => img.decode().catch(() => {}))
+    jobs.push(document.fonts.ready)
+    let finished = 0
+    jobs.forEach((job) => job.then(() => setProgress(++finished / jobs.length)))
+    let cancelled = false
+    const giveUp = new Promise((resolve) => setTimeout(resolve, 15000))
+    Promise.race([Promise.all(jobs), giveUp]).then(() => { if (!cancelled) setDone(true) })
+    return () => { cancelled = true }
+  }, [active])
+  return [progress, done]
+}
+
+function Loader({ progress, done }) {
+  return (
+    <div className={`loader${done ? ' is-done' : ''}`} role="status" aria-label="Loading the invitation">
+      <Monogram />
+      <p className="loader-names">Shane <span>&amp;</span> Zessa</p>
+      <span className="loader-line" aria-hidden="true"><span style={{ transform: `scaleX(${progress})` }} /></span>
+      <p className="loader-note">Preparing your invitation</p>
+    </div>
+  )
+}
+
+function Cover({ onOpen, leaving, loaded }) {
   // play the entrance once the photo is ready, so it never animates over a blank
   const photo = useRef(null)
   const [ready, setReady] = useState(false)
@@ -116,7 +158,7 @@ function Cover({ onOpen, leaving }) {
   }, [])
 
   return (
-    <header className={`cover${ready ? ' is-in' : ''}${leaving ? ' is-leaving' : ''}`} inert={leaving || undefined}>
+    <header className={`cover${ready && loaded ? ' is-in' : ''}${leaving ? ' is-leaving' : ''}`} inert={leaving || undefined}>
       <div className="cover-card">
         <img ref={photo} onLoad={() => setReady(true)} onError={() => setReady(true)} className="cover-bg" src={asset('web/cover-guitar.webp')} width="3000" height="2000" fetchPriority="high"
           alt="Shane playing guitar while Zessa, in a burgundy dress, leans on a branch and smiles at him" />
@@ -188,6 +230,7 @@ export default function App() {
   const [phase, setPhase] = useState('sealed')
   const opened = phase === 'open'
   useReveal(!gate)
+  const [progress, loaded] = usePreload(!gate)
 
   // The cover fills the screen and the page stays put until the guest scrolls
   // down (or taps the cue); that gesture opens the invitation instead.
@@ -232,7 +275,8 @@ export default function App() {
   const openRef = useRef(null)
   openRef.current = openInvitation
   function openInvitation() {
-    if (phase !== 'sealed') return
+    // not while the loader is still up
+    if (phase !== 'sealed' || !loaded) return
     window.scrollTo(0, 0)
     setPhase('opening')
     const still = matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -243,8 +287,9 @@ export default function App() {
 
   return (
     <>
-      {MUSIC_URL && <Music src={MUSIC_URL} />}
-      {!opened && <Cover onOpen={openInvitation} leaving={phase === 'opening'} />}
+      {MUSIC_URL && <Music src={MUSIC_URL} ready={loaded} />}
+      <Loader progress={progress} done={loaded} />
+      {!opened && <Cover onOpen={openInvitation} leaving={phase === 'opening'} loaded={loaded} />}
 
       <main className={phase === 'sealed' ? 'is-sealed' : undefined}>
         <section className="invite" id="invitation">

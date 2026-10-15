@@ -241,7 +241,8 @@ main.is-sealed .invite-head > *, main.is-sealed .invite-foot { opacity: 0; trans
 .cover-script {
   position: absolute;
   top: 17px;
-  left: 15px;
+  /* 27px at 390 wide; it may pass under the music button, which sits on top */
+  left: min(27px, 6.9cqw);
   right: 0;
   font-family: 'Mrs Saint Delafield', cursive;
   font-weight: 400;
@@ -813,3 +814,27 @@ input[type='search']::-webkit-search-cancel-button { -webkit-appearance: none; }
   .reveal, .tl-prop, .tl-moment { opacity: 1; filter: none; transform: none; }
   .collage:not(.in) > * { opacity: 1; translate: none; rotate: none; scale: none; }
 }
+
+/* loader: shown until every picture is ready, then it fades and the cover plays its entrance */
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: var(--cover-top);
+  color: var(--champagne);
+  transition: opacity 0.8s ease, visibility 0s linear 0.8s;
+}
+.loader.is-done { opacity: 0; visibility: hidden; }
+.loader .monogram { width: 64px; height: 64px; animation: loader-breathe 2.4s ease-in-out infinite; }
+@keyframes loader-breathe { 0%, 100% { opacity: 0.45; transform: scale(0.97); } 50% { opacity: 1; transform: scale(1); } }
+.loader-names { margin-top: 4px; font-family: var(--script); font-size: 34px; line-height: 1.2; color: var(--blush); }
+.loader-names span { color: var(--champagne); }
+.loader-note { font-size: 11px; font-weight: 500; letter-spacing: 0.24em; text-transform: uppercase; opacity: 0.75; }
+.loader-line { margin-top: 6px; width: 96px; height: 1px; overflow: hidden; background: rgba(232, 211, 180, 0.2); }
+.loader-line span { display: block; height: 100%; background: var(--champagne); transform-origin: left; transition: transform 0.4s var(--ease-out); }
+@media (prefers-reduced-motion: reduce) { .loader .monogram { animation: none; opacity: 0.9; } }

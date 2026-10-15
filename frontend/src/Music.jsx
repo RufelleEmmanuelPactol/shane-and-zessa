@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 
-// Background music. It tries to start as soon as the page loads; phone browsers
-// block sound until the guest touches the page, so in that case it starts on
-// their first tap (usually "Open the invitation"). The button pauses and resumes.
-export default function Music({ src }) {
+// Background music. It waits for the loader to finish (`ready`), then tries to
+// start; phone browsers block sound until the guest touches the page, so in that
+// case it starts on their first tap or swipe. The button pauses and resumes.
+export default function Music({ src, ready }) {
   const audio = useRef(null)
   const [playing, setPlaying] = useState(false)
   // once the guest pauses it themselves, don't start it again on their next tap
@@ -11,7 +11,7 @@ export default function Music({ src }) {
 
   useEffect(() => {
     const el = audio.current
-    if (!el) return
+    if (!el || !ready) return
     el.volume = 0.6
 
     const start = (e) => {
@@ -39,7 +39,7 @@ export default function Music({ src }) {
       cleanup()
       document.removeEventListener('visibilitychange', onVisibility)
     }
-  }, [])
+  }, [ready])
 
   function toggle() {
     const el = audio.current
