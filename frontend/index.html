@@ -3,6 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <script>
+      // The invitation is drawn for a 390 px wide phone. On narrower phones
+      // (360 px Androids, the 375 px iPhone SE and mini) lay it out at 390 and
+      // let the browser shrink the whole page to fit, so every section scales together.
+      (function () {
+        var w = Math.min(screen.width, screen.height)
+        if (w && w < 390) {
+          document.querySelector('meta[name=viewport]').setAttribute('content', 'width=390, viewport-fit=cover')
+        }
+      })()
+    </script>
     <title>Shane &amp; Zessa</title>
     <meta name="description" content="Shane and Zessa are getting married on November 29, 2026 in Sindangan, Zamboanga del Norte. Kindly let us know if you can join us." />
     <meta name="theme-color" content="#621828" />
@@ -14,7 +25,7 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Great+Vibes&family=Pinyon+Script&family=Mrs+Saint+Delafield&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400&family=Great+Vibes&family=Pinyon+Script&family=Mrs+Saint+Delafield&display=swap" rel="stylesheet" />
   </head>
   <body>
     <div id="root"></div>

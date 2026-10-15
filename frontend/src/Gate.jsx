@@ -52,11 +52,11 @@ export default function Gate({ kind }) {
   return (
     <div className="gate">
       <div className="gate-photo">
-        {/* same stage as the phone cover, so "Our wedding day" sits behind the couple */}
+        {/* same stage as the phone cover, so "You are Invited" sits behind the couple */}
         <div className="gate-stage">
           <img className="cover-photo" src={asset('web/cover-guitar.webp')} width="3000" height="2000"
             alt="Shane playing guitar while Zessa, in a burgundy dress, leans on a branch and smiles at him" />
-          <p className="gate-script" aria-hidden="true"><span>Our</span><span>wedding</span><span>day</span></p>
+          <p className="gate-script" aria-hidden="true"><span>You are</span><span>Invited</span></p>
           <img className="cover-photo cover-cutout" src={asset('web/cover-cutout.webp')} width="3000" height="2000" alt="" />
         </div>
         <p className="gate-date"><span />{WEDDING.dateShort}<span /></p>

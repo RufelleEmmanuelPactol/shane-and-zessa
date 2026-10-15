@@ -3,20 +3,23 @@ import Gate, { useGate } from './Gate.jsx'
 import Music from './Music.jsx'
 import Rsvp from './Rsvp.jsx'
 import { addToCalendar } from './ics.js'
-import { ArrowRight, CalendarIcon, Monogram, PinIcon, VENUE_ICONS } from './icons.jsx'
+import { CalendarIcon, Monogram, PinIcon } from './icons.jsx'
 import barongImg from './assets/attire-barong.webp'
 import filipinianaImg from './assets/attire-filipiniana.webp'
 import guestsImg from './assets/attire-guests.webp'
-import timelineSketch from './assets/day-timeline.webp'
+import timelineLine from './assets/timeline/line.webp'
+import churchSketch from './assets/timeline/prop-1.webp'
+import gardenSketch from './assets/timeline/prop-3.webp'
 import lanternsImg from './assets/lanterns.webp'
 import giftBoxImg from './assets/gift-box.webp'
+import seaMistImg from './assets/sea-mist.webp'
 import { asset, mapUrl, MUSIC_URL, WEDDING } from './wedding.js'
 
 
 // how long the cover takes to drift away; keep in step with .cover.is-leaving in index.css
 const OPEN_MS = 1400
 
-const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']
+const WEEK = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
 // Fades sections in as they scroll into view.
@@ -24,22 +27,84 @@ function useReveal(ready) {
   useEffect(() => {
     if (!ready) return
     const els = document.querySelectorAll('.reveal:not(.in)')
+    // .reveal-full starts as soon as the top of the piece is well on screen
+    const full = document.querySelectorAll('.reveal-full:not(.in)')
     if (!('IntersectionObserver' in window)) {
-      els.forEach((el) => el.classList.add('in'))
+      [...els, ...full].forEach((el) => el.classList.add('in'))
       return
     }
-    const io = new IntersectionObserver(
-      (entries) => entries.forEach((e) => {
-        if (e.isIntersecting) {
-          e.target.classList.add('in')
-          io.unobserve(e.target)
-        }
-      }),
-      { rootMargin: '0px 0px -8% 0px' },
+    const reveal = (io) => (entries) => entries.forEach((e) => {
+      if (e.isIntersecting) {
+        e.target.classList.add('in')
+        io.unobserve(e.target)
+      }
+    })
+    const io = new IntersectionObserver((entries) => reveal(io)(entries), { rootMargin: '0px 0px -8% 0px' })
+    const mostlySeen = (e) => e.intersectionRatio >= 0.15
+    const ioFull = new IntersectionObserver(
+      (entries) => reveal(ioFull)(entries.filter(mostlySeen)),
+      { threshold: Array.from({ length: 21 }, (_, i) => i / 20) },
     )
     els.forEach((el) => io.observe(el))
-    return () => io.disconnect()
+    full.forEach((el) => ioFull.observe(el))
+    return () => { io.disconnect(); ioFull.disconnect() }
   }, [ready])
+}
+
+// Each moment's sketch, cut from design/web/day-timeline.svg (its pencil filter
+// isn't reliable in every browser): [left, top, width, height] on the 342 × 1060 drawing.
+const PROP_BOXES = [
+  [199, 16, 62, 69],
+  [49, 156, 100, 81],
+  [192, 312, 60, 73],
+  [30, 466, 120, 69],
+  [195, 608, 75, 80],
+  [41, 765, 92, 64],
+  [196, 907, 37, 78],
+]
+const PROP_IMAGES = Object.values(import.meta.glob('./assets/timeline/prop-*.webp', { eager: true, import: 'default' }))
+
+// The line is drawn already; as each moment comes on screen its sketch
+// appears and then its words, one moment at a time.
+function Timeline() {
+  const list = useRef(null)
+  useEffect(() => {
+    const props = [...list.current.querySelectorAll('.tl-prop')]
+    const moments = [...list.current.querySelectorAll('.tl-moment')]
+    const show = (i) => { props[i].classList.add('in'); moments[i].classList.add('in') }
+    if (!('IntersectionObserver' in window)) return props.forEach((_, i) => show(i))
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((e) => {
+        if (!e.isIntersecting) return
+        show(moments.indexOf(e.target))
+        io.unobserve(e.target)
+      }),
+      // start once most of the moment is on screen
+      { threshold: 0.6 },
+    )
+    moments.forEach((el) => io.observe(el))
+    return () => io.disconnect()
+  }, [])
+
+  const pct = (n, of) => `${(n / of) * 100}%`
+  return (
+    <div className="timeline" ref={list}>
+      <img className="timeline-sketch" src={timelineLine} width="1026" height="3180" loading="lazy" alt="" />
+      {PROP_BOXES.map(([x, y, w, h], i) => (
+        <img key={i} className="tl-prop" src={PROP_IMAGES[i]} width={w * 3} height={h * 3} loading="lazy" alt=""
+          style={{ left: pct(x, 342), top: pct(y, 1060), width: pct(w, 342) }} />
+      ))}
+      <ol>
+        {WEDDING.day.map(({ time, title, note }, i) => (
+          <li key={title} className={i % 2 ? 'tl-moment is-left' : 'tl-moment'} style={{ '--top': `${((88 + 150 * i) / 1060) * 100}%` }}>
+            <span className="tl-time">{time}</span>
+            <span className="tl-title">{title}</span>
+            <span className="tl-note">{note}</span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  )
 }
 
 function Cover({ onOpen, leaving }) {
@@ -56,82 +121,37 @@ function Cover({ onOpen, leaving }) {
         <img ref={photo} onLoad={() => setReady(true)} onError={() => setReady(true)} className="cover-bg" src={asset('web/cover-guitar.webp')} width="3000" height="2000" fetchPriority="high"
           alt="Shane playing guitar while Zessa, in a burgundy dress, leans on a branch and smiles at him" />
 
-        <p className="cover-names" aria-label="Shane and Zessa"><span>SHANE</span><span>ZESSA</span></p>
-
         <h1 className="cover-script">
-          <span>Our</span>
-          <span>wedding</span>
-          <span>day</span>
+          <span>You are</span>
+          <span>Invited</span>
         </h1>
 
         <div className="cover-bar">
           <Monogram />
-          <button type="button" className="cover-open" onClick={onOpen}>Open the invitation <ArrowRight /></button>
+          {/* scrolling down opens it too; this is the cue (and a tap target) */}
+          <button type="button" className="cover-open" onClick={onOpen}>
+            Scroll down to continue
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+          </button>
         </div>
       </div>
     </header>
   )
 }
 
-// Cross-stitched sprig for the invitation panel.
-function Stitch() {
-  return (
-    <svg className="stitch" viewBox="0 0 240 400" aria-hidden="true">
-      <defs>
-        <pattern id="xs" width="6" height="6" patternUnits="userSpaceOnUse">
-          <path d="M1 1l4 4M5 1l-4 4" stroke="#d9a593" strokeWidth="1.3" strokeLinecap="square" />
-        </pattern>
-        <mask id="sprig">
-          <g fill="#fff" stroke="#fff">
-            <path d="M150 400C140 320 150 230 120 130" fill="none" strokeWidth="7" />
-            <path d="M140 270C170 220 200 190 214 150" fill="none" strokeWidth="5" />
-            <path d="M128 190C100 160 70 150 52 120" fill="none" strokeWidth="5" />
-            <ellipse cx="112" cy="250" rx="32" ry="13" transform="rotate(-40 112 250)" />
-            <ellipse cx="176" cy="300" rx="30" ry="12" transform="rotate(35 176 300)" />
-            <ellipse cx="96" cy="330" rx="30" ry="12" transform="rotate(-30 96 330)" />
-            <ellipse cx="170" cy="210" rx="26" ry="11" transform="rotate(30 170 210)" />
-            <g transform="translate(118 112)">
-              {[0, 72, 144, 216, 288].map((r) => <ellipse key={r} cx="0" cy="-26" rx="12" ry="22" transform={`rotate(${r})`} />)}
-            </g>
-            <g transform="translate(216 140)">
-              {[0, 72, 144, 216, 288].map((r) => <circle key={r} cx="0" cy="-14" r="10" transform={`rotate(${r})`} />)}
-            </g>
-            <g transform="translate(46 112)">
-              {[0, 72, 144, 216, 288].map((r) => <circle key={r} cx="0" cy="-12" r="9" transform={`rotate(${r})`} />)}
-            </g>
-            <circle cx="200" cy="60" r="4" /><circle cx="30" cy="200" r="4" /><circle cx="220" cy="250" r="4" />
-          </g>
-          <g fill="#000"><circle cx="118" cy="112" r="9" /><circle cx="216" cy="140" r="6" /><circle cx="46" cy="112" r="5" /></g>
-        </mask>
-      </defs>
-      <rect width="240" height="400" fill="url(#xs)" mask="url(#sprig)" opacity="0.9" />
-    </svg>
-  )
-}
-
-function Calendar({ iso }) {
+// The wedding week, Sunday first, with the day itself filled in.
+function Week({ iso }) {
   // Use the wedding's own calendar date, not the viewer's timezone.
-  const [y, m, day] = iso.slice(0, 10).split('-').map(Number)
-  const first = (new Date(Date.UTC(y, m - 1, 1)).getUTCDay() + 6) % 7 // Monday-first
-  const days = new Date(Date.UTC(y, m, 0)).getUTCDate()
-  const cells = [...Array(first).fill(null), ...Array.from({ length: days }, (_, i) => i + 1)]
-
+  const [y, m, d] = iso.slice(0, 10).split('-').map(Number)
+  const days = Array.from({ length: 7 }, (_, i) => new Date(Date.UTC(y, m - 1, d + i)))
   return (
-    <div className="calendar" role="img" aria-label={`${MONTHS[m - 1]} ${y}, with the ${day}th circled`}>
-      <p className="cal-head"><span>{MONTHS[m - 1]}</span><span className="cal-year">{y}</span></p>
-      <div className="cal-grid" aria-hidden="true">
-        {WEEKDAYS.map((w) => <span key={w} className="cal-wd">{w}</span>)}
-        {cells.map((n, i) => (
-          <span key={i} className={n === day ? 'cal-day is-day' : 'cal-day'}>
-            {n === day && (
-              <svg viewBox="0 0 60 50" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round">
-                <path d="M44 8C30 1 8 8 6 24s18 22 32 18 20-14 14-26C48 8 40 6 34 8" />
-              </svg>
-            )}
-            <span>{n ?? ''}</span>
-          </span>
-        ))}
-      </div>
+    <div className="week" role="img" aria-label={`Sunday, ${MONTHS[m - 1]} ${d}, ${y}`}>
+      {days.map((t, i) => (
+        <span key={i} className="week-day" aria-hidden="true">
+          {WEEK[t.getUTCDay()]}
+          <span className={i === 0 ? 'is-day' : i === 1 ? 'is-next' : undefined}>{t.getUTCDate()}</span>
+        </span>
+      ))}
     </div>
   )
 }
@@ -169,26 +189,48 @@ export default function App() {
   const opened = phase === 'open'
   useReveal(!gate)
 
-  // The cover fills the screen and the page stays put until "Open the invitation".
+  // The cover fills the screen and the page stays put until the guest scrolls
+  // down (or taps the cue); that gesture opens the invitation instead.
   useEffect(() => {
     if (opened) return
     const root = document.documentElement
     root.classList.add('is-sealed')
     // iOS still scrolls past overflow: hidden, which would slide the cover
-    // away, so swipes and wheels do nothing until the button is tapped
-    const stop = (e) => e.preventDefault()
+    // away, so swipes and wheels are caught and turned into "open"
+    let startY = null
+    const touchStart = (e) => { startY = e.touches[0].clientY }
+    const touchMove = (e) => {
+      e.preventDefault()
+      if (startY !== null && startY - e.touches[0].clientY > 24) openRef.current()
+    }
+    const wheel = (e) => {
+      e.preventDefault()
+      if (e.deltaY > 4) openRef.current()
+    }
+    const keys = (e) => {
+      if (['ArrowDown', 'PageDown', ' ', 'End'].includes(e.key) && e.target === document.body) {
+        e.preventDefault()
+        openRef.current()
+      }
+    }
     const pin = () => window.scrollY && window.scrollTo(0, 0)
-    document.addEventListener('touchmove', stop, { passive: false })
-    document.addEventListener('wheel', stop, { passive: false })
+    document.addEventListener('touchstart', touchStart, { passive: true })
+    document.addEventListener('touchmove', touchMove, { passive: false })
+    document.addEventListener('wheel', wheel, { passive: false })
+    document.addEventListener('keydown', keys)
     window.addEventListener('scroll', pin)
     return () => {
       root.classList.remove('is-sealed')
-      document.removeEventListener('touchmove', stop)
-      document.removeEventListener('wheel', stop)
+      document.removeEventListener('touchstart', touchStart)
+      document.removeEventListener('touchmove', touchMove)
+      document.removeEventListener('wheel', wheel)
+      document.removeEventListener('keydown', keys)
       window.removeEventListener('scroll', pin)
     }
   }, [opened])
 
+  const openRef = useRef(null)
+  openRef.current = openInvitation
   function openInvitation() {
     if (phase !== 'sealed') return
     window.scrollTo(0, 0)
@@ -206,28 +248,19 @@ export default function App() {
 
       <main className={phase === 'sealed' ? 'is-sealed' : undefined}>
         <section className="invite" id="invitation">
-          <div className="invite-photo">
-            <img src={asset('web/picnic.webp')} width="2400" height="1600" loading="lazy"
-              alt="Shane and Zessa lying head to head on a picnic quilt, laughing" />
+          <img className="invite-photo" src={seaMistImg} width="1170" height="1755"
+            alt="Shane and Zessa forehead to forehead on a rock in the shallow sea, Zessa in a flowing white gown" />
+          <div className="invite-head">
+            <p className="invite-blessing">Together with God’s blessing</p>
+            <p className="invite-of">The Wedding Of</p>
+            <h2 className="invite-names">Shane &amp; Zessa</h2>
           </div>
-          <div className="invite-panel">
-            <Stitch />
-            <span className="rule" />
-            <p className="invite-blessing">Together with God’s blessing,<br />the wedding of</p>
-            <p className="invite-names names">Shane <span>&amp;</span> Zessa</p>
-            <p className="lead">We joyfully invite you to celebrate our special day with us.</p>
-          </div>
-        </section>
-
-        <section className="when painted">
-          <img className="painting" src={asset('web/corot-lake-nemi.webp')} width="1403" height="1871" loading="lazy" alt="" />
-          <div className="when-inner">
-            <div className="reveal">
-              <h2 className="title on-dark">Save the date</h2>
-              <p className="when-date">Sunday, November 29, 2026</p>
-            </div>
-            <div className="reveal"><Calendar iso={WEDDING.start} /></div>
-            <button type="button" className="btn btn-cream reveal" onClick={addToCalendar}>
+          <div className="invite-foot">
+            <p className="invite-lead">We joyfully invite you to celebrate our special day with us.</p>
+            <p className="invite-save">Save the date</p>
+            <p className="invite-month">November</p>
+            <Week iso={WEDDING.start} />
+            <button type="button" className="invite-cal" onClick={addToCalendar}>
               <CalendarIcon /> Add to my calendar
             </button>
           </div>
@@ -238,41 +271,28 @@ export default function App() {
           <h2 className="title reveal">The day</h2>
           <p className="label day-date">{WEDDING.dayLine}</p>
           {/* a pencil line winds down the middle; each moment sits beside its sketch */}
-          <div className="timeline">
-            {/* rendered from design/web/day-timeline.svg: its pencil filter isn't reliable in every browser */}
-            <img className="timeline-sketch" src={timelineSketch} width="1026" height="3180" loading="lazy" alt="" />
-            <ol>
-              {WEDDING.day.map(({ time, title, note }, i) => (
-                <li key={title} className={i % 2 ? 'reveal is-left' : 'reveal'} style={{ '--top': `${((88 + 150 * i) / 1060) * 100}%` }}>
-                  <span className="tl-time">{time}</span>
-                  <span className="tl-title">{title}</span>
-                  <span className="tl-note">{note}</span>
-                </li>
-              ))}
-            </ol>
-          </div>
+          <Timeline />
           <p className="timeline-close reveal">We look forward to celebrating with you!</p>
         </section>
 
-        <section className="venues painted">
-          <img className="painting" src={asset('web/corot-souvenir-mortefontaine.webp')} width="1475" height="1735" loading="lazy" alt="" />
-          <div className="venues-inner">
-            <p className="label">WHERE TO FIND US</p>
-            {[[WEDDING.ceremony, 'chapel', ''], [WEDDING.reception, 'sprig', ' venue-dark']].map(([venue, icon, tone]) => (
-              <div key={venue.name} className={`venue reveal${tone}`}>
-                <div className="venue-head">
-                  <span className="venue-icon">{VENUE_ICONS[icon]}</span>
-                  <span>
-                    <span className="venue-label">{venue.label}</span>
-                    <span className="venue-name">{venue.name}</span>
-                  </span>
-                </div>
-                <a className="btn venue-go" href={mapUrl(venue)} target="_blank" rel="noopener">
-                  <PinIcon /> Get directions
+        <section className="venues">
+          <h2 className="title reveal">The Places</h2>
+          {/* two enclosure cards, like the little ones tucked in with an invitation */}
+          <div className="venue-cards">
+            {[[WEDDING.ceremony, 'Ceremony', churchSketch, [100, 81]], [WEDDING.reception, 'Reception', gardenSketch, [120, 69]]].map(([venue, what, sketch, [w, h]]) => (
+              <div key={venue.name} className="venue-card reveal">
+                <img src={sketch} width={w * 3} height={h * 3} loading="lazy" alt="" style={{ width: w, height: h }} />
+                <p className="venue-what">{what}</p>
+                <p className="venue-time">{venue.label.split(' · ')[1].toLowerCase()}</p>
+                <p className="venue-name">{venue.name}</p>
+                <p className="venue-where">{venue.address.replace(', Zamboanga del Norte', '')}</p>
+                <a className="venue-go" href={mapUrl(venue)} target="_blank" rel="noopener" aria-label={`Directions to ${venue.name}`}>
+                  <PinIcon /> Directions
                 </a>
               </div>
             ))}
           </div>
+          <p className="venues-note reveal">The reception is a short drive from the church. We’ll see you at both.</p>
         </section>
 
         <section className="attire">
@@ -281,7 +301,7 @@ export default function App() {
             <h2 className="attire-title">DRESS CODE</h2>
           </div>
 
-          <div className="collage reveal" aria-hidden="true">
+          <div className="collage reveal-full" aria-hidden="true">
             <div className="collage-base">
               <img src={asset('web/monet-poppies.webp')} width="1750" height="1400" loading="lazy" alt="" />
             </div>
@@ -346,6 +366,18 @@ export default function App() {
             alt="Zessa and Shane at the water’s edge at night, each holding up a lantern" />
         </section>
 
+        <section className="gifts">
+          <img className="gifts-box" src={giftBoxImg} width="640" height="640" loading="lazy"
+            alt="A sketch of a gift box tied with a Victorian ribbon bow and a sprig of roses" />
+          <p className="label">GIFT PREFERENCE</p>
+          <div className="gifts-verse">
+            <p>By the grace of God, we’ve been truly blessed,<br />Your love and prayers mean more than the rest.</p>
+            <p>As we start our life together, with love all around,<br />A monetary gift would help us build our dreams from the ground.</p>
+            <p className="gifts-sign">With love,</p>
+            <p className="gifts-names">Shane &amp; Zessa</p>
+          </div>
+        </section>
+
         <section className="rsvp painted" id="rsvp">
           <img className="painting" src={asset('web/monet-meadow.webp')} width="1299" height="1732" loading="lazy" alt="" />
           <div className="rsvp-inner">
@@ -358,22 +390,9 @@ export default function App() {
                 </p>
                 <div className="reply-by">
                   <span className="rsvp-rule-title">No RSVP, no seat reserved</span>
-                  <p className="rsvp-note">We sincerely ask for your prompt response and understanding as we make the necessary arrangements for our celebration.</p>
                 </div>
               </div>
             } />
-          </div>
-        </section>
-
-        <section className="gifts">
-          <img className="gifts-box" src={giftBoxImg} width="640" height="640" loading="lazy"
-            alt="A sketch of a gift box tied with a Victorian ribbon bow and a sprig of roses" />
-          <p className="label">GIFT PREFERENCE</p>
-          <div className="gifts-verse">
-            <p>By the grace of God, we’ve been truly blessed,<br />Your love and prayers mean more than the rest.</p>
-            <p>As we start our life together, with love all around,<br />A monetary gift would help us build our dreams from the ground.</p>
-            <p className="gifts-sign">With love,</p>
-            <p className="gifts-names">Shane &amp; Zessa</p>
           </div>
         </section>
       </main>

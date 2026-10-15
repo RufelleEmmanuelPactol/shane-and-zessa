@@ -15,8 +15,3 @@ export const PinIcon = () => <Icon><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1
 // The S & Z monogram, in the current text colour (a mask over `.monogram`).
 export const Monogram = ({ className = '' }) => <span className={`monogram ${className}`.trim()} aria-hidden="true" />
 
-// The venue cards. No crosses on the church.
-export const VENUE_ICONS = {
-  chapel: <Icon width={1.5}><path d="M3 21h18" /><path d="M5 21V11.5L12 5l7 6.5V21" /><path d="M10 21v-3.5a2 2 0 0 1 4 0V21" /><path d="M9.5 12.5a2.5 2.5 0 0 1 5 0" /></Icon>,
-  sprig: <Icon width={1.5}><path d="M12 21V10.5" /><path d="M12 10.5c0-3.6 2.5-6.2 6.2-6.2 0 3.6-2.6 6.2-6.2 6.2z" /><path d="M12 14.5c0-3-2.1-5.1-5.2-5.1 0 3 2.1 5.1 5.2 5.1z" /><path d="M6.5 21h11" /></Icon>,
-}

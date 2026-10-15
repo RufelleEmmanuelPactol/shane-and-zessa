@@ -185,6 +185,8 @@ html.is-sealed, html.is-sealed body { background: var(--cover-top); }
   inset: 0;
   overflow: hidden;
   background: #2b2a1e;
+  /* the script is drawn for a 390 px card and scales with its width */
+  container-type: inline-size;
 }
 .cover-bg {
   position: absolute;
@@ -208,70 +210,52 @@ html.is-sealed, html.is-sealed body { background: var(--cover-top); }
 /* cover entrance: the photo settles, then the words, then the details */
 .cover-bg { transform: scale(1.06); opacity: 0; transition: transform 1.8s var(--ease-out), opacity 1s ease; }
 .cover-script span { opacity: 0; filter: blur(6px); transform: translateY(10px); transition: opacity 1s ease, filter 1s ease, transform 1.2s var(--ease-out); }
-.cover-names { opacity: 0; transform: translateY(8px); transition: opacity 0.9s ease 0.9s, transform 0.9s var(--ease-out) 0.9s; }
 .cover-bar { transform: translateY(100%); transition: transform 0.9s var(--ease-out) 1.1s; }
 .cover.is-in .cover-bg { transform: none; opacity: 1; }
 .cover.is-in .cover-script span { opacity: 1; filter: none; transform: none; }
 .cover.is-in .cover-script span:nth-child(1) { transition-delay: 0.35s; }
 .cover.is-in .cover-script span:nth-child(2) { transition-delay: 0.55s; }
 .cover.is-in .cover-script span:nth-child(3) { transition-delay: 0.75s; }
-.cover.is-in .cover-names { opacity: 1; transform: none; }
 .cover.is-in .cover-bar { transform: none; }
 
 /* opening: the bar slips away, the words lift and blur, the photo leans in
    and the whole cover dissolves into the invitation underneath (1.4s) */
 .cover.is-leaving { opacity: 0; transition: opacity 0.9s ease 0.45s; pointer-events: none; }
 .cover.is-leaving .cover-bar { transform: translateY(100%); transition: transform 0.6s var(--ease-out); }
-.cover.is-leaving .cover-names { opacity: 0; transform: translateY(-8px); transition: opacity 0.5s ease, transform 0.6s var(--ease-out); }
 .cover.is-leaving .cover-bg { transform: scale(1.12); transition: transform 1.4s var(--ease-out); }
 .cover.is-leaving .cover-script span { opacity: 0; filter: blur(8px); transform: translateY(-18px); transition: opacity 0.6s ease, filter 0.6s ease, transform 0.8s var(--ease-out); }
 .cover.is-leaving .cover-script span:nth-child(1) { transition-delay: 0s; }
 .cover.is-leaving .cover-script span:nth-child(2) { transition-delay: 0.08s; }
 .cover.is-leaving .cover-script span:nth-child(3) { transition-delay: 0.16s; }
-.cover.is-leaving .cover-open svg { transform: translateX(6px); transition: transform 0.4s var(--ease-out); }
 
 /* …and the invitation settles in as the cover fades */
-.invite-photo img { transition: opacity 1s ease 0.55s, transform 1.6s var(--ease-out) 0.55s; }
-.invite-panel > * { transition: opacity 0.9s ease, transform 1.1s var(--ease-out); }
-.invite-panel > .rule { transition-delay: 0.7s; }
-.invite-panel > .invite-blessing { transition-delay: 0.8s; }
-.invite-panel > .invite-names { transition-delay: 0.92s; }
-.invite-panel > .lead { transition-delay: 1.04s; }
-.invite-panel > .stitch { transition-delay: 1.1s; transition-duration: 1.6s; }
-main.is-sealed .invite-photo img { opacity: 0; transform: scale(1.08); }
-main.is-sealed .invite-panel > * { opacity: 0; transform: translateY(14px); }
-main.is-sealed .invite-panel > .stitch { transform: none; }
+.invite-photo { transition: opacity 1s ease 0.55s, transform 1.6s var(--ease-out) 0.55s; }
+.invite-head > *, .invite-foot { transition: opacity 0.9s ease, transform 1.1s var(--ease-out); }
+.invite-blessing { transition-delay: 0.7s; }
+.invite-of { transition-delay: 0.8s; }
+.invite-names { transition-delay: 0.92s; }
+.invite-foot { transition-delay: 1.04s; }
+main.is-sealed .invite-photo { opacity: 0; transform: scale(1.04); }
+main.is-sealed .invite-head > *, main.is-sealed .invite-foot { opacity: 0; transform: translateY(14px); }
 
 .cover-script {
   position: absolute;
-  top: 70px;
-  left: 0;
+  top: 17px;
+  left: 15px;
   right: 0;
   font-family: 'Mrs Saint Delafield', cursive;
   font-weight: 400;
-  font-size: 100px;
+  /* 108px at 390 wide, smaller on narrower phones; offsets below are in em so they follow */
+  font-size: min(108px, 27.7cqw);
   line-height: 0.8;
   color: var(--blush);
   transform: rotate(-7deg);
   text-shadow: 0 2px 18px rgba(30, 10, 10, 0.45);
 }
 .cover-script span { display: block; }
-.cover-script span:nth-child(1) { position: relative; top: 26px; padding-left: 12px; }
-.cover-script span:nth-child(2) { padding-left: 150px; }
-.cover-script span:nth-child(3) { padding-left: 250px; }
+.cover-script span:nth-child(1) { position: relative; top: 0.111em; padding-left: 0.111em; }
+.cover-script span:nth-child(2) { padding-top: 0.13em; padding-left: 1.389em; }
 
-.cover-names {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  right: 20px;
-  display: flex;
-  justify-content: space-between;
-  font-size: 15px;
-  font-weight: 500;
-  letter-spacing: 0.2em;
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
-}
 
 
 .cover-bar {
@@ -280,95 +264,94 @@ main.is-sealed .invite-panel > .stitch { transform: none; }
   right: 0;
   bottom: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 14px;
-  padding: 120px 20px 100px;
-  /* see-through: the photo darkens toward the bottom so the button reads */
-  background: linear-gradient(rgba(29, 22, 19, 0), rgba(29, 22, 19, 0.55) 45%, var(--cover-foot));
+  gap: 6px;
+  padding: 120px 20px 28px;
+  /* the cover is 100lvh tall, so lift the cue clear of whatever Safari's
+     toolbar covers right now (lvh − dvh, zero when it's hidden) and the home bar */
+  padding-bottom: calc(28px + (100lvh - 100dvh) + env(safe-area-inset-bottom, 0px));
+  /* see-through: the photo darkens toward the bottom so the cue reads */
+  background: linear-gradient(rgba(29, 22, 19, 0), rgba(29, 22, 19, 0.5) 50%, var(--cover-foot));
 }
-.cover-bar .monogram { width: 56px; height: 56px; flex: none; color: var(--champagne); }
+.cover-bar .monogram { width: 34px; height: 34px; flex: none; color: var(--champagne); opacity: 0.9; }
+/* a whisper, not a button: one small line and a chevron that drifts downward */
 .cover-open {
-  flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  /* a link in the canvas, so its border sits outside the 56px */
-  box-sizing: content-box;
-  min-height: 56px;
-  padding: 0 22px;
-  border: 1.5px solid rgba(232, 211, 180, 0.7);
-  border-radius: 999px;
+  gap: 2px;
+  min-height: 44px;
+  padding: 6px 12px;
+  border: 0;
   background: none;
-  color: var(--cream);
-  font-size: 20px;
+  color: var(--champagne);
+  opacity: 0.8;
+  font-size: 11px;
   font-weight: 500;
-  text-decoration: none;
+  letter-spacing: 0.24em;
+  white-space: nowrap;
+  text-transform: uppercase;
   cursor: pointer;
 }
-.cover-open svg { width: 20px; height: 20px; }
+.cover-open svg { width: 16px; height: 16px; animation: cue-drift 2.4s ease-in-out infinite; }
+@keyframes cue-drift { 0%, 100% { transform: translateY(0); opacity: 0.5; } 50% { transform: translateY(4px); opacity: 1; } }
 
-/* invitation */
-.invite { display: flex; min-height: 620px; scroll-margin-top: 0; }
-.invite-photo { width: 30%; max-width: 140px; flex: none; }
-.invite-photo img { width: 100%; height: 100%; object-fit: cover; }
-.invite-panel {
-  position: relative;
-  flex: 1;
-  overflow: hidden;
-  padding: 40px 24px 220px 26px;
-  background: var(--chocolate);
+/* invitation: the sea-mist board, drawn at 390 px wide */
+/* soft invitation-card stock: faint mottling, tooth and fibres, tiled */
+.invite { position: relative; overflow: hidden; background: #f3eee7 url(./assets/paper.webp) 0 0 / 256px 256px; color: var(--ink); text-align: center; line-height: normal; scroll-margin-top: 0; container-type: inline-size; }
+/* drawn at 390 px wide: on narrower phones every size shrinks in step (--u is
+   one design pixel), so nothing wraps or runs off the edge */
+.invite > * { --u: min(1px, 100cqw / 390); }
+/* the photo is as wide as the page, nudged right so its edge bleeds off */
+.invite-photo { position: absolute; left: calc(16 * var(--u)); top: calc(84 * var(--u)); width: 100%; height: auto; }
+.invite-head { position: absolute; top: 0; left: 0; right: 0; padding: calc(52 * var(--u)) calc(24 * var(--u)) 0; }
+.invite-head > * { position: relative; }
+.invite-blessing { font-size: calc(11 * var(--u)); font-weight: 500; letter-spacing: 0.18em; line-height: 1.6; text-transform: uppercase; white-space: nowrap; color: var(--ink-soft); }
+.invite-of { margin: calc(10 * var(--u)) 0 calc(10 * var(--u)); font-size: calc(15 * var(--u)); font-weight: 700; letter-spacing: 0.2em; line-height: 1.2; text-transform: uppercase; white-space: nowrap; color: var(--chocolate); }
+.invite-names { margin-top: calc(-2 * var(--u)); font-family: var(--script); font-weight: 400; font-size: calc(58 * var(--u)); line-height: 1.15; white-space: nowrap; color: var(--maroon); }
+/* starts 9 px under the photo, which is 1.5× the page's width tall */
+.invite-foot { position: relative; display: flex; flex-direction: column; padding: calc(150% + 93 * var(--u)) calc(24 * var(--u)) calc(56 * var(--u)); }
+.invite-foot > * { position: relative; }
+.invite-lead { margin: 0 auto; font-size: calc(20 * var(--u)); font-style: italic; line-height: 1.45; color: var(--chocolate); }
+.invite-save { margin-top: calc(48 * var(--u)); font-family: var(--script); font-size: calc(56 * var(--u)); line-height: 1.1; color: var(--maroon); }
+.invite-month { margin-top: calc(10 * var(--u)); font-size: calc(13 * var(--u)); font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink); }
+.week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); margin-top: calc(16 * var(--u)); padding: calc(16 * var(--u)) calc(8 * var(--u)); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.week-day { display: flex; flex-direction: column; align-items: center; gap: calc(4 * var(--u)); font-size: calc(13 * var(--u)); letter-spacing: 0.1em; color: var(--ink-soft); }
+.week-day > span { display: grid; place-items: center; width: calc(38 * var(--u)); height: calc(38 * var(--u)); border-radius: 50%; font-size: calc(18 * var(--u)); letter-spacing: 0; color: #a8998a; }
+.week-day > .is-day { background: var(--maroon); color: var(--cream); }
+.week-day > .is-next { color: var(--ink); }
+.invite-cal {
+  margin-top: calc(22 * var(--u));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(10 * var(--u));
+  /* never below a comfortable tap size */
+  min-height: max(48px, 56 * var(--u));
+  border: 0;
+  border-radius: 999px;
+  background: var(--maroon);
   color: var(--cream);
+  font: inherit;
+  font-size: calc(20 * var(--u));
+  font-weight: 500;
+  cursor: pointer;
 }
-.invite-panel > :not(.stitch) { position: relative; }
-.invite-blessing { margin-bottom: 8px; font-size: 19px; font-style: italic; color: var(--champagne); }
-/* the couple's names: italic serif with a script ampersand, everywhere */
-.names { font-style: italic; font-weight: 400; letter-spacing: 0.01em; }
-.names span { font-family: var(--script-names); font-style: normal; font-size: 1.1em; color: var(--rose); padding: 0 0.05em; }
-.invite-names { margin-bottom: 16px; font-size: 38px; line-height: 1.15; }
-.invite-names span { color: var(--champagne); }
+.invite-cal svg { width: calc(20 * var(--u)); height: calc(20 * var(--u)); }
 .finale-names { display: inline-block; margin-top: 10px; font-family: var(--script); font-size: 46px; line-height: 1.15; color: var(--blush); }
 .finale-names span { color: var(--champagne); }
-.stitch { position: absolute; right: -30px; bottom: -20px; width: 250px; height: 416px; }
 
 /* sections over paintings */
 .painted { position: relative; overflow: hidden; isolation: isolate; }
 .painting { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
 .painted::before { content: ''; position: absolute; inset: 0; z-index: -1; }
 
-.when { padding: 52px 24px 44px; }
-.when .painting { object-position: 50% 50%; }
-.when::before { background: rgba(40, 22, 14, 0.28); }
-.when-inner { display: flex; flex-direction: column; gap: 20px; }
-.when-date { margin-top: 4px; font-size: 22px; font-weight: 500; color: var(--cream); text-shadow: 0 1px 10px rgba(20, 10, 5, 0.6); }
-.when .btn { margin-top: 2px; }
-
-.calendar {
-  padding: 22px 18px 20px;
-  background: var(--cream);
-  border-radius: 14px;
-  box-shadow: 0 18px 40px -18px rgba(20, 10, 5, 0.6);
-}
-.cal-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; font-size: 20px; font-weight: 500; }
-.cal-year { font-size: 13px; font-weight: 400; letter-spacing: 0.2em; color: var(--ink-soft); }
-.cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); row-gap: 6px; text-align: center; }
-.cal-wd { font-size: 13px; letter-spacing: 0.1em; color: var(--ink-soft); padding-bottom: 8px; }
-.cal-day { position: relative; line-height: 38px; font-size: 18px; }
-.cal-day > span { position: relative; }
-.cal-day svg {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 58px;
-  height: 48px;
-  transform: translate(-50%, -50%) rotate(-8deg);
-  color: var(--maroon);
-}
-.cal-day.is-day { font-weight: 700; color: var(--maroon); }
 
 /* the canvas boards set no line height, so these sections use the font's own */
-.day, .venues, .attire, .gifts, .finale, .rsvp-head, .day .label, .venues .label, .gifts .label, .rsvp-head .label { line-height: normal; }
+.day, .venues, .attire, .gifts, .finale, .rsvp-head, .day .label, .gifts .label, .rsvp-head .label { line-height: normal; }
 
-.day { padding: 52px 24px 44px; text-align: center; }
+.day { padding: 52px 24px 44px; background: var(--page) url(./assets/paper-page.webp) 0 0 / 256px 256px; text-align: center; }
 .day .label { margin-bottom: 6px; color: var(--maroon); }
 .day .day-date { margin: 10px 0 22px; color: var(--ink); }
 
@@ -378,29 +361,56 @@ main.is-sealed .invite-panel > .stitch { transform: none; }
 .timeline ol { list-style: none; margin: 0; padding: 0; }
 .timeline li { position: absolute; top: var(--top); left: 58.5%; right: -16px; display: flex; flex-direction: column; gap: 2px; }
 .timeline li.is-left { left: -16px; right: 58.5%; text-align: right; }
+/* each sketch settles in like it's being drawn, then its words follow */
+.tl-prop { position: absolute; height: auto; opacity: 0; filter: blur(3px); transform: translateY(8px) scale(0.97); transition: opacity 0.5s ease, filter 0.5s ease, transform 0.6s var(--ease-out); }
+.tl-prop.in { opacity: 1; filter: none; transform: none; }
+.tl-moment { opacity: 0; transform: translateY(8px); transition: opacity 0.5s ease 0.12s, transform 0.6s var(--ease-out) 0.12s; }
+.tl-moment.in { opacity: 1; transform: none; }
 .tl-time { font-size: 12px; font-weight: 500; letter-spacing: 0.16em; color: var(--maroon); }
 .tl-title { font-size: 22px; line-height: 1.15; }
 .tl-note { margin-top: 3px; font-size: 14px; line-height: 1.35; color: var(--ink-soft); }
 .timeline-close { margin-top: 26px; font-size: 20px; font-style: italic; color: var(--maroon); }
 
 /* venues: one card each, with directions on their own line, over a painting */
-.venues { padding: 48px 24px 52px; color: var(--cream); }
-.venues .painting { object-position: 30% 50%; }
-.venues::before { background: var(--burgundy); opacity: 0.72; }
-.venues-inner { display: flex; flex-direction: column; gap: 12px; }
-.venues .label { margin-bottom: 4px; color: var(--champagne); }
-.venue { display: flex; flex-direction: column; gap: 16px; padding: 18px 16px 16px; border-radius: 16px; background: var(--cream); color: var(--ink); }
-.venue-head { display: flex; align-items: center; gap: 14px; }
-.venue-head > span:last-child { display: flex; flex-direction: column; gap: 2px; }
-.venue-icon { flex: none; width: 52px; height: 52px; display: grid; place-items: center; border-radius: 50%; background: var(--burgundy); color: var(--champagne); }
-.venue-icon svg { width: 26px; height: 26px; }
-.venue-label { display: block; font-size: 13px; font-weight: 500; letter-spacing: 0.16em; color: var(--maroon); }
-.venue-name { display: block; font-size: 21px; font-weight: 500; line-height: 1.25; }
-.venue-go { min-height: 48px; gap: 8px; font-size: 18px; }
-.venue-dark { border: 1px solid rgba(232, 211, 180, 0.55); background: rgba(43, 10, 18, 0.35); color: var(--cream); }
-.venue-dark .venue-icon { background: none; border: 1px solid rgba(232, 211, 180, 0.6); }
-.venue-dark .venue-label { color: var(--champagne); }
-.venue-dark .venue-go { box-sizing: content-box; width: auto; min-height: 48px; padding: 0; background: none; border: 1.5px solid var(--champagne); color: var(--cream); }
+/* the places: two arch-topped enclosure cards on the page, a touch askew */
+.venues { padding: 52px 20px 48px; background: #f3eee7 url(./assets/paper.webp) 0 0 / 256px 256px; color: var(--ink); text-align: center; }
+.venue-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 30px; align-items: start; }
+.venue-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 34px 12px 18px;
+  border-radius: 90px 90px 6px 6px;
+  background: #f6eee3 url(./assets/paper.webp) 0 0 / 256px 256px;
+  box-shadow: 0 14px 30px -18px rgba(60, 30, 20, 0.45), 0 0 0 1px #e2d6c2;
+  rotate: -1.5deg;
+}
+.venue-card + .venue-card { margin-top: 26px; rotate: 1.5deg; }
+.venue-card + .venue-card img { margin-top: 9px; }
+/* a fine inner rule, like a printed border */
+.venue-card::before { content: ''; position: absolute; inset: 7px; border-radius: 84px 84px 3px 3px; border: 1px solid rgba(139, 30, 53, 0.35); pointer-events: none; }
+.venue-what { margin-top: 12px; font-size: 12px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--maroon); }
+.venue-time { margin-top: 2px; font-family: var(--script); font-size: 30px; line-height: 1.1; color: var(--burgundy); }
+.venue-name { margin-top: 10px; font-size: 18px; font-weight: 500; line-height: 1.25; }
+.venue-where { margin-top: 4px; font-size: 15px; font-style: italic; line-height: 1.3; color: var(--ink-soft); }
+.venue-go {
+  position: relative;
+  margin-top: 14px;
+  min-height: 44px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  background: var(--maroon);
+  color: var(--cream);
+  font-size: 16px;
+  font-weight: 500;
+  text-decoration: none;
+}
+.venue-go svg { width: 17px; height: 17px; }
+.venues-note { max-width: 30ch; margin: 34px auto 0; font-size: 18px; font-style: italic; line-height: 1.45; color: var(--chocolate); }
 
 /* dress code: its own title, the painted collage, then the cards on a garden painting */
 .attire { padding: 52px 24px 40px; color: var(--maroon); }
@@ -469,17 +479,31 @@ main.is-sealed .invite-panel > .stitch { transform: none; }
     linear-gradient(var(--page), var(--page)) 0 8px / 100% 100% no-repeat;
 }
 .collage-lace svg { display: block; width: 100%; height: 28px; }
+/* the pieces start scattered and are laid down one by one, like a collage being made */
+.collage { overflow-x: clip; }
+.collage > * {
+  transition: translate 1.2s var(--ease-out), rotate 1.2s var(--ease-out), scale 1.2s var(--ease-out), opacity 0.7s ease;
+  transition-delay: var(--d, 0s);
+}
+.collage:not(.in) > * { opacity: 0; translate: var(--sx, 0) var(--sy, 0); rotate: var(--sr, 0deg); scale: 0.92; }
+.collage-base { --sy: 40px; --d: 0s; }
+.collage-giverny { --sx: 140px; --sy: -90px; --sr: 18deg; --d: 0.22s; }
+.collage-oval { --sx: -140px; --sy: -50px; --sr: -22deg; --d: 0.38s; }
+.collage-couple { --sy: 70px; --d: 0.52s; }
+.collage-lace { --sy: 40px; --d: 0.7s; }
+.collage-bordighera { --sx: 130px; --sy: 80px; --sr: -18deg; --d: 0.86s; }
 
 /* the garden starts tucked up under the lace band */
 .attire-garden { position: relative; overflow: hidden; isolation: isolate; margin: -60px -24px 0; padding: 70px 24px 40px; }
 .attire-painting { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; object-position: 50% 35%; }
-/* a soft veil at the top, cream again at the bottom */
+/* a soft veil at the top; at the bottom the painting dissolves back into the
+   cream along a long eased curve, so it meets the lantern photo with no edge */
 .attire-garden::before {
   content: '';
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(var(--page) 60px, rgba(241, 230, 214, 0.45) 110px, rgba(241, 230, 214, 0) 190px, rgba(241, 230, 214, 0.2) calc(100% - 200px), var(--page) 100%);
+  background: linear-gradient(#f1e6d6 60px, rgba(241,230,214,0.45) 110px, rgba(241,230,214,0) 190px, rgba(241,230,214,0.000) calc(100% - 260px), rgba(241,230,214,0.016) calc(100% - 228px), rgba(241,230,214,0.104) calc(100% - 195px), rgba(241,230,214,0.275) calc(100% - 162px), rgba(241,230,214,0.500) calc(100% - 130px), rgba(241,230,214,0.725) calc(100% - 98px), rgba(241,230,214,0.896) calc(100% - 65px), rgba(241,230,214,0.984) calc(100% - 32px), rgba(241,230,214,1.000) calc(100% - 0px));
 }
 .attire-garden .title { margin-bottom: 22px; text-align: center; }
 .attire-cards { display: flex; flex-direction: column; gap: 18px; }
@@ -503,7 +527,7 @@ main.is-sealed .invite-panel > .stitch { transform: none; }
 .gifts { padding: 56px 28px 52px; text-align: center; }
 .gifts-box { width: 170px; height: 170px; margin: -12px auto 14px; }
 .gifts .label { margin-bottom: 6px; color: var(--maroon); }
-.gifts-verse { margin-top: 22px; text-align: left; font-size: 19px; line-height: 1.6; color: var(--chocolate); }
+.gifts-verse { margin-top: 22px; text-align: left; font-size: 17px; line-height: 1.6; color: var(--chocolate); }
 .gifts-verse p + p { margin-top: 18px; }
 .gifts-verse .gifts-sign { margin-top: 24px; }
 .gifts-verse .gifts-names { margin-top: 2px; font-family: var(--script); font-size: 34px; line-height: 1.2; color: var(--burgundy); }
@@ -526,8 +550,6 @@ main.is-sealed .invite-panel > .stitch { transform: none; }
 .reply-by::after { bottom: -4px; }
 .rsvp-lead { margin-top: 10px; font-size: 19px; line-height: 1.45; }
 .rsvp-lead strong { font-weight: 600; color: var(--burgundy); }
-.rsvp-note { margin-top: 14px; font-size: 17px; line-height: 1.5; color: var(--ink-soft); }
-.reply-by .rsvp-note { margin-top: 0; color: #5a463d; }
 .rsvp-rule-title { display: block; margin-bottom: 2px; font-size: 13px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--maroon); }
 
 .reply-shell {
@@ -788,5 +810,6 @@ input[type='search']::-webkit-search-cancel-button { -webkit-appearance: none; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 1ms !important; animation-delay: 0ms !important; transition-duration: 1ms !important; transition-delay: 0ms !important; }
-  .reveal { opacity: 1; transform: none; }
+  .reveal, .tl-prop, .tl-moment { opacity: 1; filter: none; transform: none; }
+  .collage:not(.in) > * { opacity: 1; translate: none; rotate: none; scale: none; }
 }

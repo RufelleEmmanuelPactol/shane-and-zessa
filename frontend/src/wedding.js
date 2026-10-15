@@ -1,4 +1,6 @@
-// Photos, paintings and music live in S3 and are served by Django at /media/<key>
+import musicFile from './assets/music.m4a'
+
+// Photos and paintings live in S3 and are served by Django at /media/<key>
 // (it redirects to a short-lived signed link). Never put S3 URLs in front-end code.
 export const asset = (key) => `/media/${key}`
 
@@ -19,7 +21,7 @@ export const WEDDING = {
     address: 'Sta. Cruz, Sindangan, Zamboanga del Norte',
     map: 'https://www.google.com/maps/place/Seventh-Day+Adventist+Church+-+Sindangan/@8.2353024,122.9952136,17.23z/data=!4m10!1m2!2m1!1ssindangan+sda!3m6!1s0x325386a2d97d06d3:0xc99e1465870c28ad!8m2!3d8.2362179!4d122.9973609!15sCg1zaW5kYW5nYW4gc2RhkgEcc2V2ZW50aF9kYXlfYWR2ZW50aXN0X2NodXJjaOABAA!16s%2Fg%2F1tg9q6nq',
   },
-  reception: { label: 'RECEPTION · 5:30 PM', name: 'Royal Garden', address: 'Sindangan, Zamboanga del Norte', map: '' },
+  reception: { label: 'RECEPTION · 5:30 PM', name: 'Royal Garden', address: 'Poblacion, Sindangan, Zamboanga del Norte', map: '' },
   replyBy: 'November 15, 2026',
   // drawn in this order down the pencil timeline (assets/day-timeline.svg),
   // so keep it to seven moments or redraw the sketch
@@ -49,7 +51,8 @@ export const mapUrl = ({ name, address, map }) =>
 export const CONTACT_URL = 'https://www.instagram.com/regormortiz/'
 
 // Background music. Leave empty to hide the music button.
-export const MUSIC_URL = asset('audio/kay-tagal-kitang-hinintay.mp3')
+// (the audio track of the couple's video, bundled with the site)
+export const MUSIC_URL = musicFile
 
 // The guest list is not here: it lives in the backend database (the repo is
 // public). Import it with `manage.py import_guests` or Admin → Parties → Import.
