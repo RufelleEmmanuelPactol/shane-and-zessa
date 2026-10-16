@@ -110,12 +110,14 @@ function Timeline() {
   )
 }
 
-// Every picture on the page (and the paper textures and fonts) is fetched and
-// decoded before the invitation shows, so nothing ever appears half-drawn.
+// Every picture on the page (and the paper textures, fonts and the music) is
+// fetched and decoded before the invitation shows, so nothing ever appears
+// half-drawn and the music can start the moment the loader is gone.
 // Gives up waiting after 15s so a slow connection still gets the page.
 function usePreload(active) {
   const [progress, setProgress] = useState(0)
   const [done, setDone] = useState(false)
+  const [music, setMusic] = useState(null)
   useEffect(() => {
     if (!active) return
     const imgs = [...document.querySelectorAll('img')]
@@ -128,6 +130,13 @@ function usePreload(active) {
     })
     const jobs = [...imgs, ...extras].map((img) => img.decode().catch(() => {}))
     jobs.push(document.fonts.ready)
+    // the whole song is held in memory, so playing it never waits on the network
+    if (MUSIC_URL) {
+      jobs.push(fetch(MUSIC_URL)
+        .then((res) => (res.ok ? res.blob() : Promise.reject()))
+        .then((blob) => setMusic(URL.createObjectURL(blob)))
+        .catch(() => {}))
+    }
     let finished = 0
     jobs.forEach((job) => job.then(() => setProgress(++finished / jobs.length)))
     let cancelled = false
@@ -135,7 +144,7 @@ function usePreload(active) {
     Promise.race([Promise.all(jobs), giveUp]).then(() => { if (!cancelled) setDone(true) })
     return () => { cancelled = true }
   }, [active])
-  return [progress, done]
+  return [progress, done, music]
 }
 
 function Loader({ progress, done }) {
@@ -230,7 +239,7 @@ export default function App() {
   const [phase, setPhase] = useState('sealed')
   const opened = phase === 'open'
   useReveal(!gate)
-  const [progress, loaded] = usePreload(!gate)
+  const [progress, loaded, music] = usePreload(!gate)
 
   // The cover fills the screen and the page stays put until the guest scrolls
   // down (or taps the cue); that gesture opens the invitation instead.
@@ -287,7 +296,7 @@ export default function App() {
 
   return (
     <>
-      {MUSIC_URL && <Music src={MUSIC_URL} ready={loaded} />}
+      {MUSIC_URL && <Music src={loaded ? music || MUSIC_URL : undefined} ready={loaded} />}
       <Loader progress={progress} done={loaded} />
       {!opened && <Cover onOpen={openInvitation} leaving={phase === 'opening'} loaded={loaded} />}
 

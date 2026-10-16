@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
-// Background music. It waits for the loader to finish (`ready`), then tries to
-// start; phone browsers block sound until the guest touches the page, so in that
+// Background music. The loader fetches the song with everything else and hands
+// it over (`src`) once all is loaded (`ready`); it then starts straight away; phone browsers block sound until the guest touches the page, so in that
 // case it starts on their first tap or swipe. The button pauses and resumes.
 export default function Music({ src, ready }) {
   const audio = useRef(null)
