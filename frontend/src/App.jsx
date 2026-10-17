@@ -4,8 +4,8 @@ import Music from './Music.jsx'
 import Rsvp from './Rsvp.jsx'
 import { addToCalendar } from './ics.js'
 import { CalendarIcon, Monogram, PinIcon } from './icons.jsx'
-import barongImg from './assets/attire-barong.webp'
-import filipinianaImg from './assets/attire-filipiniana.webp'
+import ninongImg from './assets/attire-ninong.webp'
+import ninangImg from './assets/attire-ninang.webp'
 import guestsImg from './assets/attire-guests.webp'
 import timelineLine from './assets/timeline/line.webp'
 import paperUrl from './assets/paper.webp'
@@ -392,18 +392,20 @@ export default function App() {
               <div className="attire-card reveal">
                 <p className="attire-who">For our principal sponsors</p>
                 <div className="attire-pair">
-                  <img src={barongImg} width="800" height="800" loading="lazy" alt="Drawing of a Barong Tagalog with embroidered front panels" />
-                  <img src={filipinianaImg} width="800" height="800" loading="lazy" alt="Drawing of a Filipiniana gown with butterfly sleeves" />
+                  <img src={ninongImg} width="800" height="800" loading="lazy" alt="Drawing of a champagne Barong Tagalog over black slacks" />
+                  <img src={ninangImg} width="800" height="800" loading="lazy" alt="Drawing of a rose gold formal gown with flutter sleeves" />
                 </div>
                 <p className="attire-what">Formal wear</p>
-                <p className="attire-detail">Barong Tagalog<span className="diamond" aria-hidden="true" />Filipiniana</p>
+                <p className="attire-detail"><em>Ninong</em> · rose gold, champagne or cream barong with black slacks</p>
+                <p className="attire-detail"><em>Ninang</em> · rose gold or champagne formal dresses</p>
               </div>
 
               <div className="attire-card reveal">
                 <p className="attire-who">For our guests</p>
-                <img className="attire-single" src={guestsImg} width="800" height="800" loading="lazy" alt="Drawing of a long-sleeved midi dress beside a long-sleeve shirt and trousers" />
-                <p className="attire-what">Semi-formal attire</p>
-                <p className="attire-detail">in burgundy &amp; champagne</p>
+                <img className="attire-single" src={guestsImg} width="800" height="800" loading="lazy" alt="Drawing of a burgundy midi dress, a chocolate-brown pantsuit and a maroon long-sleeve shirt with trousers" />
+                <p className="attire-what">Formal or semi-formal</p>
+                <p className="attire-detail"><em>Ladies</em> · dresses or pantsuits</p>
+                <p className="attire-detail"><em>Gentlemen</em> · formal long sleeves or smart casual</p>
                 <ul className="swatches" aria-label="Our colour palette">
                   {WEDDING.palette.map((c) => (
                     <li key={c.name}><span style={{ background: c.hex }} />{c.name}</li>

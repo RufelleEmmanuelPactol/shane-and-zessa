@@ -37,9 +37,11 @@ export const WEDDING = {
   ],
   palette: [
     { name: 'Burgundy', hex: '#621828' },
-    { name: 'Wine', hex: '#8b1e35' },
-    { name: 'Champagne', hex: '#e8d3b4' },
-    { name: 'Ivory', hex: '#f6eee3' },
+    { name: 'Maroon', hex: '#7b2230' },
+    { name: 'Chocolate', hex: '#4e2e24' },
+    { name: 'Rose gold', hex: '#c48a78' },
+    { name: 'Champagne', hex: '#e2c9a6' },
+    { name: 'Cream', hex: '#f1e6d6' },
   ],
 }
 

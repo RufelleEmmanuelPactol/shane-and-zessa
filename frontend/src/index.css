@@ -513,14 +513,15 @@ main.is-sealed .invite-head > *, main.is-sealed .invite-foot { opacity: 0; trans
 .attire-who { font-size: 18px; font-style: italic; color: var(--maroon); }
 .attire-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 10px -6px 6px; }
 .attire-pair img { width: 100%; height: auto; aspect-ratio: 1; }
-.attire-single { width: 220px; height: 220px; margin: 6px auto 4px; }
+.attire-single { width: 100%; height: auto; aspect-ratio: 1; margin: 6px 0 4px; }
 .attire-what { font-size: 28px; font-weight: 500; line-height: 1.2; }
-.attire-detail { margin-top: 6px; font-size: 17px; color: #5a463d; }
+.attire-detail { margin-top: 6px; font-size: 17px; line-height: 1.45; color: #5a463d; }
+.attire-detail em { color: var(--maroon); }
 .diamond { display: inline-block; width: 5px; height: 5px; margin: 0 10px 3px; background: #c9a96e; transform: rotate(45deg); }
 .attire-card .swatches { margin-top: 22px; padding-top: 18px; border-top: 1px solid #e2d6c2; }
 .attire-note { margin-top: 18px; font-size: 17px; font-style: italic; line-height: 1.5; color: #5a463d; }
 
-.swatches { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.swatches { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px 6px; }
 .swatches li { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 13px; letter-spacing: 0.08em; color: #5a463d; }
 .swatches li span { width: 44px; height: 44px; border-radius: 50%; box-shadow: 0 0 0 3px var(--cream), 0 0 0 4px #c9a96e; }
 
